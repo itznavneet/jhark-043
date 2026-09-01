@@ -1,0 +1,1047 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  MINISTRY_ADMIN
+  SUBMITTER
+  UNIVERSITY
+  INDUSTRY
+}
+
+enum SubmitterType {
+  CITIZEN
+  PANCHAYATI_RAJ
+  ORGANIZATION
+  GOVERNMENT_ORGANIZATION
+  OTHER
+}
+
+enum ProblemStatus {
+  SUBMITTED
+  AI_VALIDATED
+  AI_REJECTED
+  MINISTRY_REVIEW
+  MINISTRY_APPROVED
+  MINISTRY_REJECTED
+  AI_UNIVERSITY_MATCHED
+  UNIVERSITIES_RECOMMENDED
+  MINISTRY_APPROVED_UNIVERSITIES
+  INVITATIONS_SENT
+  UNIVERSITY_ACCEPTED
+  UNIVERSITY_REJECTED
+  TEAM_FORMED
+  PROPOSAL_DRAFT
+  PROPOSAL_SUBMITTED
+  INDUSTRY_REVIEW
+  INDUSTRY_ACCEPTED
+  INDUSTRY_REJECTED
+  COLLABORATION_CONFIRMED
+  PROTOTYPE_DEVELOPMENT
+  FIELD_PILOT
+  IMPLEMENTATION
+  IMPACT_MEASURED
+  COMPLETED
+}
+
+enum AssignmentStatus {
+  PENDING
+  INVITED
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  EXPIRED
+}
+
+enum RegistrationStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum RegistrationTargetType {
+  UNIVERSITY
+  INDUSTRY
+}
+
+enum ProposalStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_INDUSTRY_REVIEW
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum IndustryProposalInterestStatus {
+  EXPRESSED
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum IndustryCollaborationStatus {
+  PROPOSED
+  ACCEPTED
+  REJECTED
+  CONFIRMED
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum ProjectStatus {
+  COLLABORATION_CONFIRMED
+  INITIATED
+  PROTOTYPE_DEVELOPMENT
+  FIELD_PILOT
+  IMPLEMENTATION
+  IMPACT_MEASURED
+  COMPLETED
+  ON_HOLD
+  CANCELLED
+}
+
+enum ProblemPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AiValidationDecision {
+  VALID
+  INVALID
+  NEEDS_REVIEW
+}
+
+enum AiProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum MatchingProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ProblemEvidenceType {
+  DOCUMENT
+  IMAGE
+  VIDEO
+  LINK
+  DATASET
+  OTHER
+}
+
+enum MatchDecision {
+  RECOMMENDED
+  APPROVED
+  REMOVED
+}
+
+enum UniversityFacilityType {
+  INNOVATION_CENTER
+  INCUBATION_FACILITY
+  TESTING_FACILITY
+  FIELD_SITE
+  OTHER
+}
+
+enum TeamMemberType {
+  FACULTY_MENTOR
+  RESEARCH_STUDENT
+  INDUSTRY_EXPERT
+  OTHER
+}
+
+enum ProposalDocumentType {
+  SOLUTION_DESIGN
+  BUDGET
+  PRESENTATION
+  SUPPORTING_EVIDENCE
+  OTHER
+}
+
+enum ProjectDocumentType {
+  TECHNICAL_DOCUMENT
+  PROTOTYPE_ARTIFACT
+  TEST_REPORT
+  PILOT_REPORT
+  IMPLEMENTATION_PLAN
+  IMPACT_EVIDENCE
+  OTHER
+}
+
+enum MilestoneStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+  CANCELLED
+}
+
+enum FundingType {
+  FINANCIAL
+  CSR_GRANT
+  EQUIPMENT
+  IN_KIND
+  EXPERTISE
+  OTHER
+}
+
+enum FundingStatus {
+  PROPOSED
+  COMMITTED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+enum IndustrySupportType {
+  FUNDING
+  MENTORSHIP
+  TECHNICAL_SUPPORT
+  INFRASTRUCTURE
+  PILOT_SUPPORT
+  OTHER
+}
+
+enum SearchableSourceType {
+  UNIVERSITY_PROFILE
+  FACULTY_PROFILE
+  RESEARCH_AREA
+  LABORATORY
+  FACILITY
+  PREVIOUS_PROJECT
+}
+
+enum NotificationType {
+  LIFECYCLE_UPDATE
+  INVITATION
+  PROPOSAL_INTEREST
+  COLLABORATION_UPDATE
+  REGISTRATION_UPDATE
+  SYSTEM
+}
+
+model User {
+  id                     String                    @id @default(uuid()) @db.Uuid
+  email                  String                    @unique @db.VarChar(320)
+  passwordHash           String                    @db.VarChar(255)
+  role                   UserRole
+  displayName            String                    @db.VarChar(160)
+  isActive               Boolean                   @default(true)
+  mustChangePassword     Boolean                   @default(false)
+  mustCompleteProfile    Boolean                   @default(false)
+  universityId           String?                   @db.Uuid
+  industryId             String?                   @db.Uuid
+  createdAt              DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime                  @updatedAt @db.Timestamptz(6)
+  sessions               RefreshSession[]
+  submitterProfile       SubmitterProfile?
+  university             University?               @relation("UniversityUsers", fields: [universityId], references: [id], onDelete: SetNull)
+  industry               Industry?                 @relation("IndustryUsers", fields: [industryId], references: [id], onDelete: SetNull)
+  approvedUniversities   University[]              @relation("UniversityApprovedBy")
+  createdUniversities    University[]              @relation("UniversityCreatedBy")
+  approvedIndustries     Industry[]                @relation("IndustryApprovedBy")
+  createdIndustries      Industry[]                @relation("IndustryCreatedBy")
+  problemStatusChanges   ProblemStatusHistory[]    @relation("ProblemStatusActor")
+  approvedMatches        ProblemUniversityMatch[]  @relation("MatchApprovedBy")
+  removedMatches         ProblemUniversityMatch[]  @relation("MatchRemovedBy")
+  reviewedRegistrations  RegistrationApplication[] @relation("RegistrationReviewer")
+  submittedRegistrations RegistrationApplication[] @relation("RegistrationApplicant")
+  teamMemberships        TeamMember[]              @relation("TeamMemberUser")
+  authoredProjectUpdates ProjectUpdate[]           @relation("ProjectUpdateAuthor")
+  projectStatusChanges   ProjectStatusHistory[]    @relation("ProjectStatusActor")
+  notifications          Notification[]            @relation("NotificationRecipient")
+
+  @@index([role])
+  @@index([universityId])
+  @@index([industryId])
+}
+
+model RefreshSession {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique @db.VarChar(255)
+  expiresAt DateTime  @db.Timestamptz(6)
+  revokedAt DateTime? @db.Timestamptz(6)
+  userAgent String?   @db.VarChar(500)
+  ipAddress String?   @db.VarChar(64)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model SubmitterProfile {
+  id               String                    @id @default(uuid()) @db.Uuid
+  userId           String                    @unique @db.Uuid
+  type             SubmitterType
+  displayName      String                    @db.VarChar(160)
+  organizationName String?                   @db.VarChar(255)
+  description      String?                   @db.Text
+  createdAt        DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime                  @updatedAt @db.Timestamptz(6)
+  user             User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problems         Problem[]
+  registrations    RegistrationApplication[] @relation("SubmitterRegistrationApplicant")
+}
+
+model ProblemCategory {
+  id          String              @id @default(uuid()) @db.Uuid
+  name        String              @unique @db.VarChar(120)
+  description String?             @db.Text
+  createdAt   DateTime            @default(now()) @db.Timestamptz(6)
+  problems    Problem[]
+  analyses    ProblemAIAnalysis[]
+}
+
+model Problem {
+  id                    String                        @id @default(uuid()) @db.Uuid
+  submitterId           String                        @db.Uuid
+  categoryId            String?                       @db.Uuid
+  title                 String                        @db.VarChar(255)
+  description           String                        @db.Text
+  societalContext       String?                       @db.Text
+  geography             String?                       @db.VarChar(255)
+  district              String?                       @db.VarChar(160)
+  block                 String?                       @db.VarChar(160)
+  villageLocality       String?                       @db.VarChar(255)
+  latitude              Decimal?                      @db.Decimal(9, 6)
+  longitude             Decimal?                      @db.Decimal(9, 6)
+  desiredOutcome        String?                       @db.Text
+  priority              ProblemPriority?
+  supportingInformation String?                       @db.Text
+  currentStatus         ProblemStatus                 @default(SUBMITTED)
+  submittedAt           DateTime                      @default(now()) @db.Timestamptz(6)
+  createdAt             DateTime                      @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime                      @updatedAt @db.Timestamptz(6)
+  submitter             SubmitterProfile              @relation(fields: [submitterId], references: [id], onDelete: Restrict)
+  category              ProblemCategory?              @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  evidence              ProblemEvidence[]
+  aiAnalyses            ProblemAIAnalysis[]
+  embeddings            ProblemEmbedding[]
+  matchingRuns          UniversityMatchingRun[]
+  projectContexts       UniversityProjectContext[]
+  statusHistory         ProblemStatusHistory[]
+  universityMatches     ProblemUniversityMatch[]
+  universityAssignments UniversityProblemAssignment[]
+  teams                 ProjectTeam[]
+  proposals             Proposal[]
+
+  @@index([submitterId, createdAt])
+  @@index([currentStatus])
+  @@index([categoryId])
+  @@index([district, block])
+  @@index([priority])
+}
+
+model ProblemEvidence {
+  id            String              @id @default(uuid()) @db.Uuid
+  problemId     String              @db.Uuid
+  type          ProblemEvidenceType
+  title         String              @db.VarChar(255)
+  description   String?             @db.Text
+  fileName      String?             @db.VarChar(255)
+  storageKey    String?             @unique @db.VarChar(500)
+  mimeType      String?             @db.VarChar(120)
+  fileSizeBytes BigInt?
+  externalUrl   String?             @db.VarChar(1000)
+  createdAt     DateTime            @default(now()) @db.Timestamptz(6)
+  problem       Problem             @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([problemId, createdAt])
+}
+
+model ProblemAIAnalysis {
+  id                     String                @id @default(uuid()) @db.Uuid
+  problemId              String                @db.Uuid
+  categoryId             String?               @db.Uuid
+  processingStatus       AiProcessingStatus    @default(PENDING)
+  validationDecision     AiValidationDecision?
+  isSocietalProblem      Boolean?
+  reason                 String?               @db.Text
+  summary                String?               @db.Text
+  keywords               String[]
+  requiredExpertise      String[]
+  requiredFacilities     String[]
+  potentialSolutionAreas String[]
+  priority               ProblemPriority?
+  confidence             Decimal?              @db.Decimal(5, 4)
+  modelName              String?               @db.VarChar(120)
+  promptVersion          String?               @db.VarChar(80)
+  rawResponse            Json?
+  failureReason          String?               @db.Text
+  processedAt            DateTime?             @db.Timestamptz(6)
+  createdAt              DateTime              @default(now()) @db.Timestamptz(6)
+  problem                Problem               @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  category               ProblemCategory?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([problemId, createdAt])
+  @@index([validationDecision])
+  @@index([processingStatus])
+}
+
+model ProblemEmbedding {
+  id             String                 @id @default(uuid()) @db.Uuid
+  problemId      String                 @db.Uuid
+  contentText    String                 @db.Text
+  embedding      Unsupported("vector")?
+  embeddingModel String                 @db.VarChar(120)
+  dimensions     Int?
+  metadata       Json?
+  createdAt      DateTime               @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime               @updatedAt @db.Timestamptz(6)
+  problem        Problem                @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([problemId, embeddingModel])
+  @@index([problemId, createdAt])
+}
+
+model UniversityMatchingRun {
+  id               String                   @id @default(uuid()) @db.Uuid
+  problemId        String                   @db.Uuid
+  processingStatus MatchingProcessingStatus @default(PENDING)
+  embeddingModel   String                   @db.VarChar(120)
+  rankingModel     String                   @db.VarChar(120)
+  candidateCount   Int                      @default(0)
+  failureReason    String?                  @db.Text
+  processedAt      DateTime?                @db.Timestamptz(6)
+  createdAt        DateTime                 @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime                 @updatedAt @db.Timestamptz(6)
+  problem          Problem                  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  matches          ProblemUniversityMatch[] @relation("MatchingRunMatches")
+
+  @@index([problemId, createdAt])
+  @@index([processingStatus])
+}
+
+model ProblemStatusHistory {
+  id          String         @id @default(uuid()) @db.Uuid
+  problemId   String         @db.Uuid
+  actorUserId String?        @db.Uuid
+  oldStatus   ProblemStatus?
+  newStatus   ProblemStatus
+  reason      String?        @db.Text
+  metadata    Json?
+  createdAt   DateTime       @default(now()) @db.Timestamptz(6)
+  problem     Problem        @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  actor       User?          @relation("ProblemStatusActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([problemId, createdAt])
+  @@index([actorUserId])
+}
+
+model University {
+  id                  String                         @id @default(uuid()) @db.Uuid
+  name                String                         @unique @db.VarChar(255)
+  shortName           String?                        @unique @db.VarChar(80)
+  registrationNumber  String?                        @unique @db.VarChar(120)
+  description         String?                        @db.Text
+  website             String?                        @db.VarChar(500)
+  city                String?                        @db.VarChar(120)
+  state               String?                        @db.VarChar(120)
+  country             String                         @default("India") @db.VarChar(120)
+  isApproved          Boolean                        @default(false)
+  approvedById        String?                        @db.Uuid
+  approvedAt          DateTime?                      @db.Timestamptz(6)
+  createdById         String?                        @db.Uuid
+  createdAt           DateTime                       @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime                       @updatedAt @db.Timestamptz(6)
+  users               User[]                         @relation("UniversityUsers")
+  approvedBy          User?                          @relation("UniversityApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  createdBy           User?                          @relation("UniversityCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  faculty             UniversityFaculty[]
+  researchAreas       UniversityResearchArea[]
+  labs                UniversityLab[]
+  facilities          UniversityFacility[]
+  previousProjects    UniversityPreviousProject[]
+  knowledgeEmbeddings UniversityKnowledgeEmbedding[]
+  projectContexts     UniversityProjectContext[]
+  problemMatches      ProblemUniversityMatch[]
+  problemAssignments  UniversityProblemAssignment[]
+  teams               ProjectTeam[]
+  proposals           Proposal[]
+  registrations       RegistrationApplication[]      @relation("UniversityRegistration")
+
+  @@index([isApproved])
+  @@index([state, city])
+}
+
+model UniversityProjectContext {
+  id           String                      @id @default(uuid()) @db.Uuid
+  problemId    String                      @db.Uuid
+  universityId String                      @db.Uuid
+  assignmentId String                      @unique @db.Uuid
+  createdAt    DateTime                    @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime                    @updatedAt @db.Timestamptz(6)
+  problem      Problem                     @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  university   University                  @relation(fields: [universityId], references: [id], onDelete: Restrict)
+  assignment   UniversityProblemAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  team         ProjectTeam?
+  proposal     Proposal?
+
+  @@unique([problemId, universityId])
+  @@index([universityId, createdAt])
+}
+
+model UniversityFaculty {
+  id            String     @id @default(uuid()) @db.Uuid
+  universityId  String     @db.Uuid
+  name          String     @db.VarChar(160)
+  title         String?    @db.VarChar(160)
+  department    String?    @db.VarChar(160)
+  profile       String?    @db.Text
+  researchFocus String?    @db.Text
+  email         String?    @db.VarChar(320)
+  createdAt     DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime   @updatedAt @db.Timestamptz(6)
+  university    University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@unique([universityId, name, department])
+  @@index([universityId])
+}
+
+model UniversityResearchArea {
+  id           String     @id @default(uuid()) @db.Uuid
+  universityId String     @db.Uuid
+  name         String     @db.VarChar(160)
+  description  String?    @db.Text
+  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@unique([universityId, name])
+  @@index([name])
+}
+
+model UniversityLab {
+  id           String     @id @default(uuid()) @db.Uuid
+  universityId String     @db.Uuid
+  name         String     @db.VarChar(255)
+  description  String?    @db.Text
+  capabilities String[]
+  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime   @updatedAt @db.Timestamptz(6)
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@unique([universityId, name])
+  @@index([universityId])
+}
+
+model UniversityFacility {
+  id           String                 @id @default(uuid()) @db.Uuid
+  universityId String                 @db.Uuid
+  name         String                 @db.VarChar(255)
+  type         UniversityFacilityType
+  description  String?                @db.Text
+  capabilities String[]
+  createdAt    DateTime               @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime               @updatedAt @db.Timestamptz(6)
+  university   University             @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@unique([universityId, name])
+  @@index([universityId, type])
+}
+
+model UniversityPreviousProject {
+  id           String     @id @default(uuid()) @db.Uuid
+  universityId String     @db.Uuid
+  title        String     @db.VarChar(255)
+  summary      String?    @db.Text
+  domains      String[]
+  outcomes     String?    @db.Text
+  completedAt  DateTime?  @db.Timestamptz(6)
+  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@unique([universityId, title])
+  @@index([universityId])
+}
+
+model UniversityKnowledgeEmbedding {
+  id             String                 @id @default(uuid()) @db.Uuid
+  universityId   String                 @db.Uuid
+  sourceType     SearchableSourceType
+  sourceId       String                 @db.Uuid
+  contentText    String                 @db.Text
+  embedding      Unsupported("vector")?
+  embeddingModel String                 @db.VarChar(120)
+  dimensions     Int?
+  metadata       Json?
+  createdAt      DateTime               @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime               @updatedAt @db.Timestamptz(6)
+  university     University             @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceType, sourceId, embeddingModel])
+  @@index([universityId, sourceType])
+}
+
+model Industry {
+  id                  String                      @id @default(uuid()) @db.Uuid
+  name                String                      @unique @db.VarChar(255)
+  registrationNumber  String?                     @unique @db.VarChar(120)
+  description         String?                     @db.Text
+  website             String?                     @db.VarChar(500)
+  sector              String?                     @db.VarChar(160)
+  city                String?                     @db.VarChar(120)
+  state               String?                     @db.VarChar(120)
+  country             String                      @default("India") @db.VarChar(120)
+  isApproved          Boolean                     @default(false)
+  approvedById        String?                     @db.Uuid
+  approvedAt          DateTime?                   @db.Timestamptz(6)
+  createdById         String?                     @db.Uuid
+  createdAt           DateTime                    @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime                    @updatedAt @db.Timestamptz(6)
+  users               User[]                      @relation("IndustryUsers")
+  approvedBy          User?                       @relation("IndustryApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  createdBy           User?                       @relation("IndustryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  expertise           IndustryExpertise[]
+  interestAreas       IndustryInterestArea[]
+  supportCapabilities IndustrySupportCapability[]
+  proposalInterests   IndustryProposalInterest[]
+  proposalViews       IndustryProposalView[]
+  collaborations      IndustryCollaboration[]
+  projects            Project[]
+  registrations       RegistrationApplication[]   @relation("IndustryRegistration")
+
+  @@index([isApproved])
+  @@index([state, city])
+}
+
+model IndustryExpertise {
+  id          String   @id @default(uuid()) @db.Uuid
+  industryId  String   @db.Uuid
+  name        String   @db.VarChar(160)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  industry    Industry @relation(fields: [industryId], references: [id], onDelete: Cascade)
+
+  @@unique([industryId, name])
+  @@index([name])
+}
+
+model IndustryInterestArea {
+  id         String   @id @default(uuid()) @db.Uuid
+  industryId String   @db.Uuid
+  name       String   @db.VarChar(160)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  industry   Industry @relation(fields: [industryId], references: [id], onDelete: Cascade)
+
+  @@unique([industryId, name])
+  @@index([name])
+}
+
+model IndustrySupportCapability {
+  id          String   @id @default(uuid()) @db.Uuid
+  industryId  String   @db.Uuid
+  name        String   @db.VarChar(160)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  industry    Industry @relation(fields: [industryId], references: [id], onDelete: Cascade)
+
+  @@unique([industryId, name])
+  @@index([name])
+}
+
+model ProblemUniversityMatch {
+  id               String                        @id @default(uuid()) @db.Uuid
+  problemId        String                        @db.Uuid
+  universityId     String                        @db.Uuid
+  matchingRunId    String?                       @db.Uuid
+  matchScore       Decimal                       @db.Decimal(6, 5)
+  rank             Int
+  decision         MatchDecision                 @default(RECOMMENDED)
+  justification    String                        @db.Text
+  matchingMetadata Json?
+  evidence         Json?
+  approvedById     String?                       @db.Uuid
+  approvedAt       DateTime?                     @db.Timestamptz(6)
+  removedById      String?                       @db.Uuid
+  removedAt        DateTime?                     @db.Timestamptz(6)
+  generatedAt      DateTime                      @default(now()) @db.Timestamptz(6)
+  createdAt        DateTime                      @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime                      @updatedAt @db.Timestamptz(6)
+  problem          Problem                       @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  university       University                    @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  matchingRun      UniversityMatchingRun?        @relation("MatchingRunMatches", fields: [matchingRunId], references: [id], onDelete: SetNull)
+  approvedBy       User?                         @relation("MatchApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  removedBy        User?                         @relation("MatchRemovedBy", fields: [removedById], references: [id], onDelete: SetNull)
+  assignments      UniversityProblemAssignment[]
+
+  @@unique([problemId, universityId])
+  @@index([problemId, decision])
+  @@index([matchingRunId, rank])
+  @@index([universityId])
+}
+
+model UniversityProblemAssignment {
+  id             String                    @id @default(uuid()) @db.Uuid
+  problemId      String                    @db.Uuid
+  universityId   String                    @db.Uuid
+  matchId        String?                   @db.Uuid
+  status         AssignmentStatus          @default(PENDING)
+  invitedAt      DateTime?                 @db.Timestamptz(6)
+  respondedAt    DateTime?                 @db.Timestamptz(6)
+  responseNote   String?                   @db.Text
+  createdAt      DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime                  @updatedAt @db.Timestamptz(6)
+  problem        Problem                   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  university     University                @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  match          ProblemUniversityMatch?   @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  projectContext UniversityProjectContext?
+
+  @@unique([problemId, universityId])
+  @@index([problemId, status])
+  @@index([universityId, status])
+}
+
+model ProjectTeam {
+  id               String                    @id @default(uuid()) @db.Uuid
+  problemId        String                    @db.Uuid
+  universityId     String                    @db.Uuid
+  projectContextId String?                   @unique @db.Uuid
+  name             String                    @db.VarChar(255)
+  description      String?                   @db.Text
+  formedAt         DateTime                  @default(now()) @db.Timestamptz(6)
+  createdAt        DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime                  @updatedAt @db.Timestamptz(6)
+  problem          Problem                   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  university       University                @relation(fields: [universityId], references: [id], onDelete: Restrict)
+  projectContext   UniversityProjectContext? @relation(fields: [projectContextId], references: [id], onDelete: SetNull)
+  members          TeamMember[]
+  proposals        Proposal[]
+
+  @@unique([problemId, universityId])
+  @@index([universityId])
+}
+
+model TeamMember {
+  id         String         @id @default(uuid()) @db.Uuid
+  teamId     String         @db.Uuid
+  userId     String?        @db.Uuid
+  memberType TeamMemberType
+  name       String         @db.VarChar(160)
+  roleTitle  String?        @db.VarChar(160)
+  department String?        @db.VarChar(160)
+  email      String?        @db.VarChar(320)
+  createdAt  DateTime       @default(now()) @db.Timestamptz(6)
+  team       ProjectTeam    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user       User?          @relation("TeamMemberUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([teamId, name, memberType])
+  @@index([teamId, memberType])
+  @@index([userId])
+}
+
+model Proposal {
+  id                    String                     @id @default(uuid()) @db.Uuid
+  problemId             String                     @db.Uuid
+  universityId          String                     @db.Uuid
+  projectContextId      String?                    @unique @db.Uuid
+  teamId                String?                    @unique @db.Uuid
+  title                 String                     @db.VarChar(255)
+  problemUnderstanding  String                     @db.Text
+  solutionSummary       String                     @db.Text
+  technicalApproach     String?                    @db.Text
+  innovation            String?                    @db.Text
+  expectedOutcomes      String?                    @db.Text
+  requiredResources     String?                    @db.Text
+  estimatedBudget       Decimal?                   @db.Decimal(14, 2)
+  timeline              String?                    @db.Text
+  prototypePlan         String?                    @db.Text
+  pilotPlan             String?                    @db.Text
+  implementationPlan    String?                    @db.Text
+  expectedSocialImpact  String?                    @db.Text
+  requestedSupport      String?                    @db.Text
+  requestedSupportTypes IndustrySupportType[]      @default([])
+  status                ProposalStatus             @default(DRAFT)
+  submittedAt           DateTime?                  @db.Timestamptz(6)
+  createdAt             DateTime                   @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime                   @updatedAt @db.Timestamptz(6)
+  problem               Problem                    @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  university            University                 @relation(fields: [universityId], references: [id], onDelete: Restrict)
+  projectContext        UniversityProjectContext?  @relation(fields: [projectContextId], references: [id], onDelete: SetNull)
+  team                  ProjectTeam?               @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  documents             ProposalDocument[]
+  industryInterests     IndustryProposalInterest[]
+  industryViews         IndustryProposalView[]
+  collaborations        IndustryCollaboration[]
+  project               Project?
+
+  @@unique([problemId, universityId])
+  @@index([status, createdAt])
+  @@index([universityId])
+}
+
+model ProposalDocument {
+  id            String               @id @default(uuid()) @db.Uuid
+  proposalId    String               @db.Uuid
+  type          ProposalDocumentType
+  title         String               @db.VarChar(255)
+  storageKey    String?              @unique @db.VarChar(500)
+  externalUrl   String?              @db.VarChar(1000)
+  mimeType      String?              @db.VarChar(120)
+  fileSizeBytes BigInt?
+  createdAt     DateTime             @default(now()) @db.Timestamptz(6)
+  proposal      Proposal             @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId, createdAt])
+}
+
+model IndustryProposalInterest {
+  id          String                         @id @default(uuid()) @db.Uuid
+  proposalId  String                         @db.Uuid
+  industryId  String                         @db.Uuid
+  supportType IndustrySupportType
+  status      IndustryProposalInterestStatus @default(EXPRESSED)
+  message     String?                        @db.Text
+  createdAt   DateTime                       @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime                       @updatedAt @db.Timestamptz(6)
+  proposal    Proposal                       @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  industry    Industry                       @relation(fields: [industryId], references: [id], onDelete: Cascade)
+
+  @@unique([proposalId, industryId])
+  @@index([industryId, status])
+  @@index([proposalId, status])
+}
+
+model IndustryProposalView {
+  id         String   @id @default(uuid()) @db.Uuid
+  proposalId String   @db.Uuid
+  industryId String   @db.Uuid
+  viewedAt   DateTime @default(now()) @db.Timestamptz(6)
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  industry   Industry @relation(fields: [industryId], references: [id], onDelete: Cascade)
+
+  @@unique([proposalId, industryId])
+  @@index([industryId, viewedAt])
+  @@index([proposalId, viewedAt])
+}
+
+model IndustryCollaboration {
+  id             String                      @id @default(uuid()) @db.Uuid
+  proposalId     String                      @db.Uuid
+  industryId     String                      @db.Uuid
+  projectId      String?                     @db.Uuid
+  supportType    IndustrySupportType
+  status         IndustryCollaborationStatus @default(PROPOSED)
+  supportSummary String?                     @db.Text
+  confirmedAt    DateTime?                   @db.Timestamptz(6)
+  createdAt      DateTime                    @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime                    @updatedAt @db.Timestamptz(6)
+  proposal       Proposal                    @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  industry       Industry                    @relation(fields: [industryId], references: [id], onDelete: Restrict)
+  project        Project?                    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  fundingRecords IndustryFunding[]
+
+  @@unique([proposalId, industryId])
+  @@index([industryId, status])
+  @@index([projectId])
+}
+
+model IndustryFunding {
+  id              String                @id @default(uuid()) @db.Uuid
+  collaborationId String                @db.Uuid
+  fundingType     FundingType
+  status          FundingStatus         @default(PROPOSED)
+  amount          Decimal?              @db.Decimal(14, 2)
+  currencyCode    String?               @db.Char(3)
+  description     String?               @db.Text
+  conditionsNotes String?               @db.Text
+  committedAt     DateTime?             @db.Timestamptz(6)
+  receivedAt      DateTime?             @db.Timestamptz(6)
+  createdAt       DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime              @updatedAt @db.Timestamptz(6)
+  collaboration   IndustryCollaboration @relation(fields: [collaborationId], references: [id], onDelete: Cascade)
+
+  @@index([collaborationId, status])
+}
+
+model Project {
+  id             String                  @id @default(uuid()) @db.Uuid
+  proposalId     String                  @unique @db.Uuid
+  industryId     String?                 @db.Uuid
+  status         ProjectStatus           @default(INITIATED)
+  startedAt      DateTime?               @db.Timestamptz(6)
+  completedAt    DateTime?               @db.Timestamptz(6)
+  createdAt      DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime                @updatedAt @db.Timestamptz(6)
+  proposal       Proposal                @relation(fields: [proposalId], references: [id], onDelete: Restrict)
+  industry       Industry?               @relation(fields: [industryId], references: [id], onDelete: Restrict)
+  collaborations IndustryCollaboration[]
+  milestones     ProjectMilestone[]
+  updates        ProjectUpdate[]
+  documents      ProjectDocument[]
+  impactMeasures ImpactMeasurement[]
+  statusHistory  ProjectStatusHistory[]
+}
+
+model ProjectStatusHistory {
+  id          String         @id @default(uuid()) @db.Uuid
+  projectId   String         @db.Uuid
+  actorUserId String?        @db.Uuid
+  oldStatus   ProjectStatus?
+  newStatus   ProjectStatus
+  reason      String?        @db.Text
+  createdAt   DateTime       @default(now()) @db.Timestamptz(6)
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  actor       User?          @relation("ProjectStatusActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, createdAt])
+  @@index([actorUserId])
+}
+
+model ProjectMilestone {
+  id                   String          @id @default(uuid()) @db.Uuid
+  projectId            String          @db.Uuid
+  title                String          @db.VarChar(255)
+  description          String?         @db.Text
+  sequence             Int
+  status               MilestoneStatus @default(PLANNED)
+  plannedStart         DateTime?       @db.Timestamptz(6)
+  plannedEnd           DateTime?       @db.Timestamptz(6)
+  dueDate              DateTime?       @db.Timestamptz(6)
+  completionPercentage Int             @default(0)
+  deliverables         String[]        @default([])
+  completedAt          DateTime?       @db.Timestamptz(6)
+  createdAt            DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime        @updatedAt @db.Timestamptz(6)
+  project              Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  updates              ProjectUpdate[]
+
+  @@unique([projectId, sequence])
+  @@unique([projectId, title])
+  @@index([projectId, status])
+}
+
+model ProjectUpdate {
+  id                 String            @id @default(uuid()) @db.Uuid
+  projectId          String            @db.Uuid
+  authorUserId       String?           @db.Uuid
+  milestoneId        String?           @db.Uuid
+  title              String            @db.VarChar(255)
+  content            String            @db.Text
+  progressPercentage Int?
+  createdAt          DateTime          @default(now()) @db.Timestamptz(6)
+  project            Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author             User?             @relation("ProjectUpdateAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
+  milestone          ProjectMilestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  documents          ProjectDocument[]
+
+  @@index([projectId, createdAt])
+  @@index([authorUserId])
+  @@index([milestoneId])
+}
+
+model ProjectDocument {
+  id            String              @id @default(uuid()) @db.Uuid
+  projectId     String              @db.Uuid
+  updateId      String?             @db.Uuid
+  type          ProjectDocumentType
+  title         String              @db.VarChar(255)
+  storageKey    String?             @unique @db.VarChar(500)
+  externalUrl   String?             @db.VarChar(1000)
+  mimeType      String?             @db.VarChar(120)
+  fileSizeBytes BigInt?
+  createdAt     DateTime            @default(now()) @db.Timestamptz(6)
+  project       Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  update        ProjectUpdate?      @relation(fields: [updateId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, createdAt])
+  @@index([updateId])
+}
+
+model ImpactMeasurement {
+  id               String    @id @default(uuid()) @db.Uuid
+  projectId        String    @db.Uuid
+  metricName       String    @db.VarChar(255)
+  description      String?   @db.Text
+  baseline         Decimal?  @db.Decimal(18, 4)
+  target           Decimal?  @db.Decimal(18, 4)
+  actual           Decimal?  @db.Decimal(18, 4)
+  peopleBenefited  Int?
+  locationsCovered Int?
+  unit             String?   @db.VarChar(80)
+  measuredAt       DateTime? @db.Timestamptz(6)
+  evidence         String?   @db.Text
+  notes            String?   @db.Text
+  createdAt        DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(6)
+  project          Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, metricName])
+  @@index([projectId, measuredAt])
+}
+
+model RegistrationApplication {
+  id                   String                            @id @default(uuid()) @db.Uuid
+  applicantUserId      String                            @db.Uuid
+  submitterProfileId   String?                           @db.Uuid
+  targetType           RegistrationTargetType
+  organizationName     String                            @db.VarChar(255)
+  registrationNumber   String?                           @db.VarChar(120)
+  status               RegistrationStatus                @default(PENDING)
+  applicationData      Json?
+  reviewedById         String?                           @db.Uuid
+  reviewedAt           DateTime?                         @db.Timestamptz(6)
+  reviewReason         String?                           @db.Text
+  approvedUniversityId String?                           @db.Uuid
+  approvedIndustryId   String?                           @db.Uuid
+  createdAt            DateTime                          @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime                          @updatedAt @db.Timestamptz(6)
+  applicant            User                              @relation("RegistrationApplicant", fields: [applicantUserId], references: [id], onDelete: Restrict)
+  submitterProfile     SubmitterProfile?                 @relation("SubmitterRegistrationApplicant", fields: [submitterProfileId], references: [id], onDelete: SetNull)
+  reviewer             User?                             @relation("RegistrationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  approvedUniversity   University?                       @relation("UniversityRegistration", fields: [approvedUniversityId], references: [id], onDelete: SetNull)
+  approvedIndustry     Industry?                         @relation("IndustryRegistration", fields: [approvedIndustryId], references: [id], onDelete: SetNull)
+  documents            RegistrationApplicationDocument[]
+
+  @@index([status, createdAt])
+  @@index([applicantUserId])
+}
+
+model RegistrationApplicationDocument {
+  id            String                  @id @default(uuid()) @db.Uuid
+  applicationId String                  @db.Uuid
+  title         String                  @db.VarChar(255)
+  storageKey    String?                 @unique @db.VarChar(500)
+  externalUrl   String?                 @db.VarChar(1000)
+  mimeType      String?                 @db.VarChar(120)
+  fileSizeBytes BigInt?
+  createdAt     DateTime                @default(now()) @db.Timestamptz(6)
+  application   RegistrationApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, createdAt])
+}
+
+model Notification {
+  id                String           @id @default(uuid()) @db.Uuid
+  recipientId       String           @db.Uuid
+  type              NotificationType
+  title             String           @db.VarChar(255)
+  message           String           @db.Text
+  relatedEntityType String?          @db.VarChar(80)
+  relatedEntityId   String?          @db.Uuid
+  metadata          Json?
+  readAt            DateTime?        @db.Timestamptz(6)
+  createdAt         DateTime         @default(now()) @db.Timestamptz(6)
+  recipient         User             @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, readAt, createdAt])
+  @@index([relatedEntityType, relatedEntityId])
+}

@@ -6,7 +6,7 @@ Societal Innovation Collaboration Portal is a production-style MVP for SIH Probl
 
 The platform connects citizens, Panchayati Raj Institutions, community and government organizations, ministries, universities, higher education institutions, industries, startups, MSMEs, and CSR organizations. The Ministry retains visibility and final decision authority across the problem-to-impact lifecycle.
 
-This repository is at **Phase 0 - Project Initialization**. Application features are not implemented yet.
+This repository is at **Phase 14 - MVP UI/UX and SIH Demonstration Polish**. Authentication/RBAC, organization onboarding/profile foundations, problem submission/lifecycle, advisory structured AI problem analysis, semantic university matching, university collaboration, industry collaboration, project delivery tracking, in-app notifications, the Ministry analytics dashboard, and the shared role-aware frontend experience are implemented. Backend behavior remains covered by the deterministic end-to-end journey.
 
 ## Technology stack
 
@@ -34,6 +34,13 @@ routes -> controllers -> services -> repositories/database
 - Services own use cases, business rules, transactions, and domain orchestration.
 - Repositories own persistence queries and database access.
 - AI services own OpenAI calls, prompts, structured outputs, embeddings, and explanation handling.
+- University matching services own searchable-source normalization, embedding synchronization, pgvector retrieval, grounded ranking, recommendation persistence, and duplicate detection; vector SQL stays inside repositories.
+- Authentication services own password verification, JWT access tokens, and database-backed refresh-session rotation. Refresh tokens are delivered only through secure HTTP-only cookies.
+- Authentication middleware reloads active users from the database before authorizing requests; role checks are enforced on the backend.
+- Collaboration services own university invitation dispatch, university-scoped assignment access, team formation, proposal drafts/submission, industry proposal discovery, interest, funding, collaboration, and industry project views. Acceptance transactions and project/project-context creation stay in repositories.
+- Project services own university-authorized delivery transitions, append-only project status history, milestones, progress updates, provider-neutral documents, impact measurements, and role-scoped project visibility.
+- Notification services own recipient-scoped notification persistence, event fan-out, unread/read state, and refresh-based retrieval. Notification writes for lifecycle events stay inside the originating transaction where one exists.
+- Analytics services own Ministry-only read models and SQL aggregation for overview KPIs, problem/organization/project/impact reporting. Analytics must not load complete tables into Node.js when PostgreSQL can aggregate efficiently.
 - Domain concepts such as lifecycle state transitions must be explicit and reusable rather than duplicated string comparisons.
 - Prefer small, focused, feature-based modules over large files with unrelated responsibilities.
 
@@ -59,7 +66,7 @@ As implementation begins, organize application code by feature/domain. Keep shar
 ## Business rules
 
 - Initial roles are `MINISTRY_ADMIN`, `SUBMITTER`, `UNIVERSITY`, and `INDUSTRY`.
-- A submitter may be an individual citizen, Panchayati Raj Institution, community organization, government organization, or other organization. Retain the submitter type.
+- A submitter may have type `CITIZEN`, `PANCHAYATI_RAJ`, `ORGANIZATION`, `GOVERNMENT_ORGANIZATION`, or `OTHER`. Submitter type is separate from the authorization role.
 - A submitter may create multiple problems.
 - Personal/private matters, including family disputes or purely personal requests, are not valid societal innovation problems.
 - Valid problems represent societal challenges that may be addressed through academic, technological, process, or collaborative work.
@@ -85,6 +92,7 @@ Lifecycle transitions must be defined in one domain state-machine module with au
 - Read secrets from environment variables or a secret manager; commit only safe example configuration when needed.
 - Hash passwords with a suitable password-hashing algorithm; never store plaintext passwords.
 - Verify JWT signatures, expiry, issuer/audience claims as appropriate, and role permissions on the backend.
+- Use short-lived access tokens and revoke/rotate database-backed refresh sessions on logout and refresh-token use.
 - Treat frontend role checks as UX only; enforce authorization on every protected backend operation.
 - Validate and sanitize untrusted input at the API boundary.
 - Apply least privilege to database and service credentials.
@@ -96,6 +104,7 @@ Lifecycle transitions must be defined in one domain state-machine module with au
 - Use dedicated AI modules with typed request/response contracts, timeout/error handling, and observable failure behavior.
 - AI validation must distinguish societal innovation challenges from personal/private issues.
 - AI recommendations must be explainable: persist or return the relevant summary, criteria, and justification rather than an opaque ranking only.
+- University recommendation evidence must reference persisted source type/source identity records returned by retrieval; LLM output cannot introduce unsupported evidence.
 - AI output is advisory. Ministry decisions must be explicit and attributable to a Ministry actor.
 - Do not send unnecessary sensitive personal data to external AI services.
 - Embeddings and semantic retrieval must use PostgreSQL plus pgvector; use Prisma for normal persistence and carefully isolated raw SQL/unsupported-type handling only where required.

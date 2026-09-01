@@ -2,14 +2,104 @@
 
 ## Current phase
 
-**Phase 0 - Project Initialization**
+**Phase 14 - MVP UI/UX and SIH Demonstration Polish**
 
 ## Completed
 
-- Repository structure
-- Documentation foundation
-- Separate `frontend/` and `backend/` directory placeholders
-- Local PostgreSQL/pgvector Docker Compose scaffold
+- Prisma domain schema covering authentication, profiles, problems, universities, industries, matching, teams, proposals, collaborations, projects, registration, communication, and status history
+- Explicit Prisma lifecycle enums and TypeScript lifecycle constants/transition map
+- Initial Prisma migration plus focused partial unique-index migration for one accepted university per problem
+- Idempotent TypeScript development seed with synthetic accounts and representative records
+- Backend Prisma/TypeScript package configuration and environment examples
+- Express app/server bootstrap with validated environment configuration
+- CORS, Helmet, request limits, request IDs, async controller handling, validation middleware foundation, safe error handling, 404 handling, and API response conventions
+- Database-backed `GET /api/health` endpoint with repository/service/controller separation
+- Focused HTTP foundation tests and production build configuration
+- Local PostgreSQL/pgvector container started and verified
+- Submitter type vocabulary aligned to `CITIZEN`, `PANCHAYATI_RAJ`, `ORGANIZATION`, `GOVERNMENT_ORGANIZATION`, and `OTHER` with an explicit migration
+- Environment validation for JWT and refresh-session settings, with placeholders only in `.env.example`
+- Bcrypt password verification and safe public-user mapping that never returns password hashes
+- JWT access-token service, opaque database-backed refresh sessions, atomic refresh rotation, and logout revocation
+- Authentication endpoints: login, refresh, logout, and current-user
+- `authenticate` middleware with active-user reload and `requireRole` middleware for all four application roles
+- Role authorization tests and live end-to-end authentication verification against the local PostgreSQL database
+- User onboarding flags and migration for first-login temporary credential/profile completion
+- Ministry-created university and industry organization accounts with generated temporary credentials
+- University and industry self-registration applications with structured organization data
+- Ministry application listing, detail, approval, rejection, and rejection reasons
+- Transactional approval that reuses the applicant user and links the approved organization without duplicate users
+- Structured university profile maintenance for faculty, research areas, laboratories, facilities, and previous projects
+- Structured industry profile maintenance for expertise, interest areas, and support capabilities
+- Cross-organization duplicate name/registration checks, unique email protection, and duplicate pending-application protection
+- Express 5-safe parsed query validation using request-owned `validated` data
+- Live integration verification for creation, onboarding, approval/rejection, profile access, duplicate prevention, and role boundaries
+- Structured problem submission fields for location, coordinates, priority, context, desired outcome, supporting information, and evidence metadata
+- Provider-neutral evidence references supporting image, video, and document types through storage keys or external URLs
+- Submitter problem creation with multiple submissions per account and owner-scoped list/detail/timeline access
+- Ministry problem list/detail/timeline access with status, category, district, and block filters
+- Centralized actor-aware lifecycle transition validation and transactional `SUBMITTED -> MINISTRY_REVIEW` support
+- Append-only initial and transition `ProblemStatusHistory` records with previous status, new status, actor, timestamp, and reason
+- Minimal Next.js/Tailwind submitter authentication integration, submission form, own-problems page, detail page, evidence display, and lifecycle timeline
+- Live Phase 5 API verification for submissions, privacy boundaries, Ministry visibility, evidence metadata, history, invalid transitions, and role authorization
+- Official OpenAI SDK integration behind a dedicated problem-analysis provider; `OPENAI_API_KEY` remains optional at startup
+- Dedicated AI prompt, strict JSON schema, Zod output validation, typed AI contracts, and safe provider/malformed-output errors
+- Extended `ProblemAIAnalysis` persistence with processing status, validity reasoning, potential solution areas, completion/failure metadata, and retryable attempts
+- Ministry-only AI analysis endpoints: trigger, view attempts/latest result, and retry failed analysis
+- AI failure handling that preserves the submitted problem and lifecycle status while recording a safe failure reason
+- Ministry AI review screen displaying advisory validity, category, keywords, priority, expertise, facilities, summary, confidence, and explicit human actions
+- AI unit tests for valid societal problems, personal/invalid problems, malformed output, provider failure, retry, persistence, and human approval isolation
+- Live Phase 6 API verification with `OPENAI_API_KEY` unset: failure persistence/retry, protected access, unchanged problem status, and explicit Ministry review/approval
+- `ProblemEmbedding` and `UniversityMatchingRun` schema models with an 8th Prisma migration and 1,536-dimension pgvector columns/indexes
+- Traceable university knowledge indexing for university profiles, faculty, research areas, laboratories, facilities, and previous projects
+- OpenAI embedding and structured university-ranking providers with deterministic non-production development fallbacks when no key is configured
+- pgvector cosine retrieval, grouped candidate evidence, grounded recommendation validation, top-five persistence, retryable matching runs, and safe failure handling
+- Ministry-only matching, recommendation inspection, removal, approval, and approved-pool manual addition endpoints
+- Ministry semantic university recommendation UI with source evidence, scores, justification, run state, and human approval controls
+- Basic semantic duplicate detection that reports potential duplicates without merging or rejecting problems
+- Matching lifecycle transitions now verify the conditional status update before appending history, preventing false history entries under concurrent matching attempts
+- Deterministic seed data for three synthetic approved universities with distinct capabilities and a Ministry-approved matching sample problem
+- Phase 7 unit, live API, pgvector retrieval, grounded ranking, duplicate detection, recommendation approval/removal, and role-boundary verification
+- UniversityProjectContext model and migration for accepted-university collaboration workspaces
+- Ministry invitation dispatch from approved university recommendations
+- University-scoped assignment listing, detail, accept, and reject operations
+- Transaction-safe university acceptance with competing invitation cancellation, one-accepted-university protection, lifecycle history, and project-context creation
+- University team management with faculty mentor and research-member support
+- Structured proposal drafts covering solution, technical, innovation, resources, budget, plans, timeline, and social impact
+- Proposal submission lifecycle and industry discovery limited to submitted proposals
+- Phase 8 frontend university workspace for assignments, invitation response, teams, proposal drafts, and submission
+- Phase 8 authorization, lifecycle, service-delegation, formatting, lint, typecheck, and backend build verification
+- Live Phase 8 migration, seed, API health, and PostgreSQL concurrent-acceptance verification
+- Structured industry support types, proposal requested-support filters, and funding conditions/status fields
+- Industry-scoped eligible proposal discovery with domain, technology, university, expertise, budget, and support filters
+- Organization-scoped proposal interest with duplicate prevention and authenticated industry authorization
+- Transactional industry acceptance with lifecycle history, competing-interest rejection, optional funding tracking, and project creation
+- Industry collaboration/project listing with access isolation; university proposal edit boundaries remain enforced
+- Phase 9 industry dashboard for discovery, interest, collaboration confirmation, funding details, and project monitoring
+- Phase 9 route and PostgreSQL integration tests
+- Project operational status enum, centralized project state machine, and university-only transition authorization
+- Append-only `ProjectStatusHistory` with transaction-safe project transitions and corresponding problem lifecycle history
+- University project management APIs for ordered milestones, progress updates, provider-neutral documents, and simple impact measurements
+- Role-scoped project visibility for Ministry, assigned universities, supporting industries, and owning submitters
+- Project route authorization/validation tests and PostgreSQL integration coverage for delivery data and access isolation
+- Minimal Next.js project workspace with role-aware full/simplified project views and university management actions
+- Phase 10 Prisma migration with project fields, status history, foreign keys, range constraints, and restored pgvector indexes
+- Notification model extended with explicit related entity type/ID and indexed recipient/entity access
+- Transaction-aware notification event fan-out for problem, AI, invitation, university, proposal, industry, collaboration, and project events
+- Protected notification list, unread-count, mark-read, and mark-all-read APIs with recipient isolation
+- Refresh-based frontend notification indicator, unread count, dropdown, and full notification list
+- Phase 11 notification route tests and PostgreSQL integration coverage for event creation and cross-user isolation
+- Ministry-only analytics API at `GET /api/analytics/ministry` with PostgreSQL aggregation for overview, problem, organization, project, and impact metrics
+- Reusable Ministry analytics frontend with KPI cards, grouped distributions, time series, decision/acceptance metrics, participation tables, delivery metrics, and impact metrics
+- Ministry control navigation linking implemented problem, AI recommendation, project, analytics, and notification destinations while identifying organization/application destinations that remain planned
+- Deterministic dashboard seed fixtures covering review, rejection, accepted university work, active delivery, completed delivery, funding, milestones, and impact
+- Deterministic Phase 13 end-to-end integration scenario covering submission through completion, impact, Ministry analytics, AI mocking, role isolation, malformed IDs, and concurrent university acceptance
+- Regression fix allowing Ministry to move an AI-validated problem into Ministry review through the centralized lifecycle state machine
+- Shared frontend visual system for typography, spacing, panels, buttons, forms, status badges, empty states, loading states, and error states
+- Responsive role-aware application shell with clear identity, role navigation, notification access, and sign-out controls
+- Polished submitter, Ministry, university, industry, project, problem-detail, and notification views using focused reusable components
+- Reusable lifecycle stepper that presents the challenge journey consistently and adapts intermediate statuses into a concise role-friendly view
+- Explicit Ministry labels distinguishing AI recommendations from Ministry decisions in the problem review workspace
+- Accessibility improvements for form labels, semantic navigation, status announcements, keyboard focus states, notification controls, and lifecycle landmarks
 
 ## In progress
 
@@ -17,38 +107,188 @@
 
 ## Next phase
 
-**Phase 1 - Database and domain architecture**
+**Phase 15 - Production Readiness and Deployment Hardening**
 
-Planned work includes the initial domain model, explicit lifecycle state machine, Prisma setup, migrations, status history, and repository boundaries. The complete database schema is intentionally not implemented in Phase 0.
+Planned work includes Ministry organization/application management screens, richer document upload handling, additional reporting/read models, and production deployment hardening.
 
 ## Known issues
 
-- None known in the project at the end of Phase 0 verification.
-- Environment note: PowerShell's `npm` shim is blocked by local execution policy, but `npm.cmd` is available and reports version `10.9.2`. No application package checks are applicable yet.
+- No known Phase 14 UI integration bugs remain after frontend lint and typecheck verification.
+- The in-app browser connector was unavailable during this run, so visual route inspection used HTTP smoke checks where the local dev server responded.
+- Frontend `next build` was attempted four bounded ways after the UI changes (standard build, `--debug`, single-worker, and SWC-WASM-disabled) but stalled after the Next.js version banner/trace generation without completing; the processes were stopped. The last known successful Phase 13 production build remains recorded below.
+- Host port `5432` is occupied by an unrelated running container, so the project database was verified on host port `55432` for this run.
+- The backend startup verification used host port `4100` to avoid unrelated local listeners.
+- Prisma CLI `6.19.3` warns that the `package.json#prisma` configuration property is deprecated in Prisma 7; migration to `prisma.config.ts` is deferred to a future tooling update.
+- npm reports that resolved `eslint@9.39.5` is deprecated; lint still passes, and an upgrade decision is deferred.
+- `npm audit --audit-level=high` reports 3 high-severity `deepmerge-ts` findings in Prisma's development dependency chain; no automatic breaking `npm audit fix --force` was applied.
+- Frontend `npm.cmd install` reports 2 dependency vulnerabilities (1 moderate, 1 high); no automatic or breaking audit fix was applied.
+- The frontend contains the Phase 5 submitter slice, Phase 6-7 Ministry AI/matching review screen, Phase 8 university collaboration workspace, Phase 9 industry collaboration workspace, Phase 10 project workspace, Phase 11 notification UI, and Phase 12 analytics dashboard; Ministry organization/application screens remain planned.
+- Evidence currently stores provider-neutral metadata and external links; binary upload/storage integration is planned for a later infrastructure phase.
+- Impact is recorded before the final `COMPLETED` transition because the explicit project lifecycle requires `IMPLEMENTATION -> IMPACT_MEASURED -> COMPLETED`.
+- OpenAI problem analysis remains optional in local environments; without `OPENAI_API_KEY`, Phase 6 analysis records a retryable failure. Phase 7 matching uses a deterministic development fallback outside production when the key is absent.
+- Self-registration currently assumes a pre-existing authenticated `UNIVERSITY` or `INDUSTRY` user account; public applicant account creation is outside this phase.
+- No frontend test suite is configured yet; frontend typecheck, lint, and the Phase 13 production build pass.
 
 ## Verification
 
-Commands actually run for this initialization:
+Commands actually run for Phases 1-13:
 
 | Command | Result |
 | --- | --- |
-| `Get-ChildItem -Force; rg --files -g '!node_modules' -g '!dist' -g '!build' \| Select-Object -First 200; git status --short --branch; Get-ChildItem -Recurse -File -Include package.json,tsconfig.json,eslint.config.*,*.config.*` | Passed: repository was empty apart from Git metadata before initialization; no package/config manifests existed. |
-| `git diff --check` | Passed with no output. Since the new files are untracked, the separate working-tree whitespace scan below checked their contents directly. |
-| `rg -n --hidden -g '!.git/**' -g '!docs/AGENTS.md' '(sk-[A-Za-z0-9]{20,}\|AKIA[0-9A-Z]{16}\|-----BEGIN (RSA \|EC \|OPENSSH )?PRIVATE KEY-----\|gh[pousr]_[A-Za-z0-9_]{20,}\|xox[baprs]-[A-Za-z0-9-]{20,})' .` | Passed: no credential-like token patterns found. |
-| `docker --version` | Passed: Docker `29.7.2`; emitted a local warning that `C:\Users\acer\.docker\config.json` could not be read due to access denial. |
-| `$env:POSTGRES_USER='sicip_dev'; $env:POSTGRES_PASSWORD='local_placeholder_only'; $env:POSTGRES_DB='sicip_dev'; docker compose config` | Passed: Compose rendered valid configuration using process-local placeholder values; emitted the same local Docker config warning. |
-| `Test-Path` checks for all requested paths | Passed: all requested files/directories and the pgvector init script exist. |
-| `git check-ignore -v --no-index .env backend/.env frontend/.next/cache.txt postgres-data/data.txt` and `.env.example` check | Passed: local environment/database/build paths are ignored and `.env.example` is not ignored. |
-| `rg -n '[ \\t]+$' --hidden -g '!.git/**' -g '!*.gitkeep' .` | Passed: no trailing whitespace found. |
-| Secret-like filename scan with `rg --files --hidden -g '!.git/**'` | Passed: no secret-like files found. |
-| `node --version` | Passed: Node.js `v22.13.1`. |
-| `npm --version` | Not available through the PowerShell shim because local execution policy blocks `npm.ps1`. |
-| `npm.cmd --version` | Passed: npm `10.9.2`. |
-| Final `Test-Path` checks for all expected files | Passed: all expected files exist. |
-| Final trailing-whitespace scan with `rg -n '[ \\t]+$'` | Passed: no trailing whitespace found. |
-| Final non-ASCII scan with `rg -n -P '[^\\x00-\\x7F]'` | Passed: no non-ASCII encoding hazards found. |
-| Final credential-token and secret-filename scans | Passed: no credential-like token patterns or secret-like files found. |
-| Final `docker compose config --quiet` with process-local placeholder values | Passed with exit code `0`; emitted the local Docker config access warning described above. |
-| Final `git status --short --branch` | Passed: only the intended new, uncommitted initialization files/directories are present. |
+| `npm.cmd install` | Passed: installed backend dependencies and created/updated `backend/package-lock.json`; npm reported 3 high-severity audit findings. |
+| `npm.cmd run prisma:format` | Passed after filesystem-approved retry; Prisma formatted `backend/prisma/schema.prisma`. Prisma emitted the Prisma 7 config deprecation warning. |
+| `DATABASE_URL=... npm.cmd run prisma:validate` | Passed: Prisma CLI `6.19.3` reported the schema is valid. |
+| `POSTGRES_* environment; docker compose up -d` | First attempt blocked by occupied host port `5432`; passed on host port `55432`, and the container became healthy. |
+| `DATABASE_URL=... npm.cmd exec -- prisma migrate dev --name init` | Passed: created and applied migration `20260830161434_init` and generated Prisma Client. |
+| `DATABASE_URL=... npm.cmd exec -- prisma migrate deploy` | Passed: applied migration `20260830170000_single_accepted_assignment`. |
+| `DATABASE_URL=... npm.cmd exec -- prisma migrate reset --force --skip-seed` | Passed against the project database after the initial migration was corrected to enable pgvector for Prisma shadow databases. |
+| `DATABASE_URL=... npm.cmd exec -- prisma migrate deploy` | Passed: applied `20260830170000_single_accepted_assignment` and `20260830180000_align_submitter_types`; database is current with 3 migrations. |
+| `DATABASE_URL=... npm.cmd exec -- prisma migrate deploy` | Passed: applied `20260830190000_account_onboarding` and `20260830200000_industry_support_capabilities`; database is current with 5 migrations. |
+| `DATABASE_URL=... npm.cmd run db:seed` | Passed: seeded synthetic development data. |
+| Second `DATABASE_URL=... npm.cmd run db:seed` | Passed: seed is idempotent. |
+| `docker exec ... SELECT extname ...` | Passed: PostgreSQL reports `vector 0.8.6`. |
+| `docker exec ...` required-table count query | Passed: 14 required core tables exist; seed counts are `4 users, 1 university, 1 industry, 1 problem, 1 status-history record`. |
+| `POSTGRES_* environment; docker compose -f ..\\docker-compose.yml ps` and `docker inspect ...` | Passed: project PostgreSQL is up and healthy on host port `55432`. |
+| `DATABASE_URL=... npm.cmd exec -- prisma migrate status` | Passed during the earlier foundation verification: database schema was up to date with 2 migrations. The later Phase 3 status check confirms 3 migrations are now applied. |
+| Rolled-back PostgreSQL transaction inserting two accepted assignments for one problem | Passed: partial unique guard rejected the second accepted university and transaction rolled back. |
+| `npm.cmd run format` then `npm.cmd run format:check` | Passed: backend TypeScript/configuration files use Prettier style. |
+| `npm.cmd run lint` | Initial unused-parameter failure fixed with the configured underscore convention; final run passed. |
+| `npm.cmd run typecheck` | Initial validator typing failure fixed; final run passed with exit code `0`. |
+| `npm.cmd test` | Passed: 1 test file and 2 tests. |
+| `npm.cmd test` after Phase 3 auth changes | Passed: 2 test files and 4 tests, including Ministry-only role authorization. |
+| `npm.cmd run build` | Initial sandbox write failed with `EPERM`; filesystem-approved retry passed with exit code `0`. |
+| `npm.cmd run format:check` after Phase 3 auth changes | Passed. |
+| `npm.cmd run lint` after Phase 3 auth changes | Passed. |
+| `npm.cmd run typecheck` after Phase 3 auth changes | Passed. |
+| `npm.cmd run build` after Phase 3 auth changes | Passed with exit code `0`. |
+| `npm.cmd exec -- prisma generate` and `npm.cmd run prisma:format` after Phase 4 schema changes | Passed: Prisma Client regenerated and schema formatted. |
+| `npm.cmd run format` after Phase 4 changes | Passed. |
+| `npm.cmd run format:check` after Phase 4 changes | Passed. |
+| `npm.cmd run lint` after Phase 4 changes | Passed. |
+| `npm.cmd run typecheck` after Phase 4 changes | Passed. |
+| `npm.cmd test` after Phase 4 changes | Passed: 2 test files and 4 tests. |
+| `npm.cmd run build` after Phase 4 changes | Passed with exit code `0`. |
+| `npm.cmd audit --audit-level=high` | Completed and reported 3 high-severity `deepmerge-ts` findings in the Prisma development dependency chain; no forced breaking fix applied. |
+| `NODE_ENV=test PORT=4100 DATABASE_URL=... FRONTEND_URL=... npm.cmd start` | Passed: built Express server started on port `4100`. |
+| `GET http://localhost:4100/api/health` with request ID | Passed with HTTP `200`, `database: "up"`, and propagated request ID. |
+| `GET http://localhost:4100/api/health` with `Origin` and request ID headers | Passed with CORS origin `http://localhost:3000`, Helmet `nosniff`, and propagated request ID. |
+| `GET http://localhost:4100/api/missing` and foundation HTTP tests | Passed: safe HTTP `404` envelope; no stack trace exposed. |
+| Live auth verification against `http://localhost:4100/api` | Passed: valid seeded login `200`; invalid login `401`; `/api/auth/me` without token `401`; with valid token `200`; refresh `200`; rotated-token reuse `401`; logout `200`; refresh after logout `401`. Access token was not printed and refresh cookie was confirmed HTTP-only. |
+| Live Phase 4 registration/profile integration against `http://localhost:4100/api` | Passed: Ministry created university/industry accounts `201`; temporary-password first login and password change `200`; university profile update `200`; duplicate email/name `409`; university and industry applications `201`; Ministry list/detail `200`; university approval and profile access `200`; industry rejection `200`; approval of rejected application `409`; submitter Ministry operation `403`; wrong organization role `403`; unauthenticated application access `401`. |
+| `npm.cmd install` in `frontend` | Passed: installed Next.js/React/Tailwind/TypeScript dependencies; npm reported 2 vulnerabilities (1 moderate, 1 high). |
+| `npm.cmd exec -- tsc --noEmit --incremental false` in `frontend` | Passed. The initial incremental check was blocked by the sandbox cache-file permission; the non-incremental check passed. |
+| `npm.cmd run lint` in `frontend` | Passed after excluding generated `.next` output and the generated `next-env.d.ts` reference from source linting. |
+| `npm.cmd run build` in `frontend` | Passed: Next.js 15.5.24 compiled, typechecked, generated all five static/dynamic routes, and completed optimization. |
+| Frontend test command | Not run: no frontend test script or test suite is configured yet. |
+| `npm.cmd run format:check` in `backend` | Passed after Phase 5 changes. |
+| `npm.cmd run lint` in `backend` | Passed after Phase 5 changes. |
+| `npm.cmd run typecheck` in `backend` | Passed after Phase 5 changes. |
+| `npm.cmd test` in `backend` | Passed: 3 test files and 6 tests, including lifecycle transition authorization. |
+| `npm.cmd run build` in `backend` | Initial sandbox write failed with `EPERM` for existing `dist` artifacts; filesystem-approved retry passed. |
+| `DATABASE_URL=... npm.cmd exec -- prisma migrate deploy` | Passed: applied `20260830210000_problem_submission_fields`; database is current with 6 migrations. |
+| `NODE_ENV=test PORT=4100 DATABASE_URL=... FRONTEND_URL=... npm.cmd start` | Passed: backend started on port `4100` for live Phase 5 verification. |
+| Temporary Node `fetch` integration probe against `http://localhost:4100/api` | Passed: two problem submissions `201`; submitter own list/detail/timeline `200`; Ministry filtered list/detail `200`; Ministry review transition `200`; invalid repeat transition `409`; unauthorized submission/list operations `403`; second submitter cross-owner detail `404`; evidence metadata and status-history assertions passed. |
+| `DATABASE_URL=... npm.cmd exec -- prisma migrate status` after Phase 4 | Passed: database schema was up to date with 5 migrations before the Phase 5 migration. |
+| `DATABASE_URL=... npm.cmd exec -- prisma migrate status` after Phase 5 | Passed: database schema is up to date with 6 migrations. |
+| `npm.cmd install openai` in `backend` | Passed: installed the official OpenAI SDK; npm reported 3 high-severity dependency findings and no forced fix was applied. |
+| `npm.cmd exec -- prisma generate` after Phase 6 schema changes | Passed after clearing a Windows Prisma query-engine file-lock conflict. |
+| `DATABASE_URL=... npm.cmd exec -- prisma migrate deploy` after Phase 6 | Passed: applied `20260831090000_ai_analysis_processing`; database is current with 7 migrations. |
+| `DATABASE_URL=... npm.cmd exec -- prisma migrate status` after Phase 6 | Passed: database schema is up to date with 7 migrations. |
+| `DATABASE_URL=... npm.cmd exec -- prisma migrate deploy` after Phase 7 schema changes | Passed: applied `20260831100000_semantic_university_matching`; database is current with 8 migrations. |
+| `DATABASE_URL=... npm.cmd run db:seed` after Phase 7 seed changes | Passed: idempotent synthetic seed created three approved universities with distinct searchable capabilities and an approved matching sample problem. |
+| `npm.cmd run format:check`, `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd test`, and `npm.cmd run build` in `backend` after Phase 7 | Passed: 6 test files and 15 tests; production build passed after filesystem-approved rerun. |
+| `npm.cmd exec -- tsc --noEmit --incremental false`, `npm.cmd run lint`, and `npm.cmd run build` in `frontend` after Phase 7 | Passed: Ministry matching panel compiled and Next.js production build completed. |
+| Temporary Node fetch integration probe against `http://localhost:4100/api` after Phase 7 | Passed: 36 knowledge sources indexed; matching completed with 5 recommendations; grounded evidence and development ranking persisted; duplicate detection returned 3 potential duplicates; Ministry approval and removal persisted; submitter matching access returned `403`. |
+| `npm.cmd run prisma:validate` after Phase 6 | Passed: Prisma schema is valid. |
+| `npm.cmd run format:check`, `npm.cmd run lint`, `npm.cmd run typecheck` in `backend` after Phase 6 | Passed. |
+| `npm.cmd test` in `backend` after Phase 6 | Passed: 4 test files and 11 tests, including AI output validation, failure handling, retry, persistence, and human approval isolation. |
+| `npm.cmd run build` in `backend` after Phase 6 | Passed. |
+| Backend lifecycle-guard follow-up: `npm.cmd run format:check`, `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd test` | Passed: all backend checks passed; 6 test files and 15 tests passed. |
+| Backend lifecycle-guard follow-up: `npm.cmd run build` | Passed after filesystem-approved retry. |
+| Phase 8: `npm.cmd run prisma:format`, `npm.cmd exec -- prisma generate`, and `DATABASE_URL=... npm.cmd run prisma:validate` | Passed after filesystem-approved retry; Prisma generated the client and validated the new collaboration relations. |
+| Phase 8: `npm.cmd run format`, `npm.cmd run format:check`, `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd test`, and `npm.cmd run build` in `backend` | Passed: backend formatting, lint, typecheck, production build, and 22 tests across 8 test files passed. |
+| Phase 8: `npm.cmd exec -- tsc --noEmit --incremental false` and `npm.cmd run lint` in `frontend` | Passed for the university dashboard and modified frontend files. |
+| Phase 8: frontend Prettier check | Repository has no frontend `format:check` script; the available Prettier check found pre-existing unformatted files, and the Phase 8-added/modified files were formatted individually. |
+| Phase 8: `npm.cmd run build` in `frontend` | Not completed in the bounded rerun: the single Next.js process remained CPU-bound without further output and was stopped; frontend typecheck and lint passed. |
+| Phase 8 initial audit: Docker/database startup and migration deployment | Blocked at that time because Docker Desktop Linux engine was not running; the later completion verification below passed after Docker Desktop was started. |
+| Phase 8 completion: `POSTGRES_* environment; docker compose ps` | Passed: `societal-innovation-postgres` is healthy on host port `55432`. |
+| Phase 8 completion: `DATABASE_URL=... npm.cmd exec -- prisma migrate deploy` | Passed: applied `20260831110000_university_collaboration`; all 9 migrations are applied. |
+| Phase 8 completion: `DATABASE_URL=... npm.cmd exec -- prisma migrate status` | Passed: database schema is up to date. |
+| Phase 8 completion: `DATABASE_URL=... npm.cmd run db:seed` twice | Passed: synthetic collaboration data seeded successfully and the seed remained idempotent. |
+| Phase 8 completion: `RUN_COLLABORATION_INTEGRATION=true DATABASE_URL=... npm.cmd test` | Passed: all 9 backend test files and 23 tests passed, including the real PostgreSQL concurrent-acceptance test. |
+| Phase 8 completion: `NODE_ENV=test PORT=4100 DATABASE_URL=... JWT_SECRET=... FRONTEND_URL=... npm.cmd start` plus `GET /api/health` | Passed: backend started and returned HTTP 200 with `database: "up"`; no secret was exposed. |
+| Phase 8 completion: bounded `NEXT_TELEMETRY_DISABLED=1 npm.cmd run build` in `frontend` | Not completed: Next.js emitted its version banner but no further output for 90 seconds; process was stopped. |
+| Phase 9: Prisma format/generate/validate and migration | Passed: schema validated, Prisma Client regenerated, migration `20260831022002_industry_collaboration` applied, and database is current with 10 migrations. |
+| Phase 9: backend format/lint/typecheck/build | Passed. |
+| Phase 9: `npm.cmd test` with both integration flags enabled | Passed: all 11 backend test files and 28 tests passed, including PostgreSQL industry and concurrent university collaboration tests. |
+| Phase 9: industry route tests | Passed: role isolation, filter validation, malformed support validation, and university proposal edit boundary covered. |
+| Phase 9: real PostgreSQL industry integration test | Passed: eligible filtering, duplicate interest prevention, funding persistence, collaboration/project creation, lifecycle history, and industry access isolation verified. |
+| Phase 9: PostgreSQL index verification | Passed: pgvector HNSW indexes and one-active-industry-collaboration unique index exist. |
+| Phase 9: frontend `npm.cmd exec -- tsc --noEmit --incremental false` and `npm.cmd run lint` | Passed. |
+| Phase 9: targeted frontend Prettier check | Passed after formatting `IndustryDashboard.tsx`, `industry/page.tsx`, `AppShell.tsx`, `page.tsx`, `ProposalForm.tsx`, and `lib/api.ts` with the repository's backend Prettier binary; the frontend has no own Prettier dependency or format script. |
+| Phase 9: bounded `NEXT_TELEMETRY_DISABLED=1 npm.cmd run build` in `frontend` | Not completed: Next.js emitted its version banner but no further output for 60 seconds; process was stopped. |
+| Phase 7 completion re-audit: `npm.cmd run format:check`, `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd test` in `backend` | Passed: formatting, lint, and typecheck passed; all 6 test files and 15 tests passed. |
+| Phase 7 completion re-audit: `npm.cmd run build` in `backend` | First restricted-shell attempt hit the known Windows `EPERM` lock on existing `dist` artifacts; filesystem-approved retry passed. |
+| Phase 7 completion re-audit: `npm.cmd exec -- tsc --noEmit --incremental false` and `npm.cmd run lint` in `frontend` | Passed. |
+| Phase 7 completion re-audit: `npm.cmd run build` in `frontend` | Not completed in the bounded rerun: the single Next.js process remained CPU-bound without emitting further output and was stopped; the earlier Phase 7 production build verification remains passed. |
+| Phase 7 completion re-audit: `.gitignore`, environment/private-key/credential scan, and `git diff --check` | Passed: only placeholder env examples exist; no secret files or credential patterns were found; no whitespace errors were reported. |
+| Phase 7 completion re-audit: `DATABASE_URL=... npm.cmd exec -- prisma migrate status` | Database connectivity was unavailable because the local container was not running; the command reported a schema-engine connection error. |
+| Phase 7 completion re-audit: `npm.cmd run prisma:validate` | Passed: Prisma schema is valid. |
+| Phase 7 completion re-audit: `POSTGRES_* environment; docker compose up -d` | Blocked: Docker Desktop Linux engine was not running; no `.env` was created and no database state was changed. |
+| `npm.cmd exec -- tsc --noEmit --incremental false`, `npm.cmd run lint`, and `npm.cmd run build` in `frontend` after Phase 6 | Passed: Next.js generated six routes, including `/ministry/problems`. |
+| `NODE_ENV=test PORT=4100 DATABASE_URL=... FRONTEND_URL=...` with `OPENAI_API_KEY` unset, followed by `npm.cmd start` | Passed: backend started on port `4100` for AI failure-path verification. |
+| Temporary Node `fetch` integration probe against `http://localhost:4100/api` | Passed: AI trigger/view/retry returned persisted `FAILED` attempts with a safe missing-key reason; submitter access was `403`; problem remained `SUBMITTED`; explicit Ministry review and approval returned `200`. |
+| Phase 6 completion audit: Prisma migration status, backend format/lint/typecheck/test/build, frontend typecheck/lint/build | Passed: 7 migrations current; backend 11 tests passed and production build passed after the required filesystem-approved rerun; frontend checks and production build passed, including `/ministry/problems`. |
+| Phase 6 completion audit: repository hygiene checks | Passed: no real `.env` files, credential patterns, or active verification server; `.gitignore` reviewed and `git diff --check` passed. |
+| `docker compose ps` final Phase 5 probe | Blocked in the restricted shell by Docker named-pipe permission; PostgreSQL connectivity was independently verified through Prisma migration status and the live API, which completed database-backed submission and lifecycle operations. |
+| Prisma seed role-account query | Passed: exactly one synthetic account was returned for each role: `MINISTRY_ADMIN`, `SUBMITTER`, `UNIVERSITY`, and `INDUSTRY`. |
+| Final secret-file scan | Passed: no `.env`, private-key, certificate, or credential files found; only placeholder environment examples are tracked. |
+| Final `Test-Path`, `git diff --check`, trailing-whitespace, non-ASCII, credential-token, and secret-filename scans | Passed: all expected files exist; no whitespace/encoding/credential/secret-file issues found. |
+| Final `git status --short --branch` | Passed: only intended project files are uncommitted. |
+| Phase 10 schema migration creation/application | Passed: migration `20260831030311_project_lifecycle` applied; local database is current at 11 migrations. The historical Phase 9 migration was corrected so Prisma shadow-database replay does not reference embedding indexes before their tables exist. |
+| Phase 10 `npm.cmd exec -- prisma generate`, `npm.cmd run prisma:validate`, and `npm.cmd exec -- prisma migrate status` | Passed: Prisma Client generated, schema validated, and database reported up to date. |
+| Phase 10 `npm.cmd run format`, `npm.cmd run lint`, and `npm.cmd run typecheck` in `backend` | Passed. |
+| Phase 10 `RUN_COLLABORATION_INTEGRATION=true RUN_INDUSTRY_INTEGRATION=true DATABASE_URL=... npm.cmd test` in `backend` | Passed: 13 test files and 34 tests, including project lifecycle authorization, scoped visibility, milestone/update/document/impact persistence, and existing concurrent collaboration acceptance. |
+| Phase 10 `npm.cmd run build` in `backend` | Passed: TypeScript production build completed. |
+| Phase 10 frontend formatting, `npm.cmd exec -- tsc --noEmit --incremental false`, and `npm.cmd run lint` | Passed; the initial hook warning was fixed and the final lint run had no warnings. |
+| Phase 10 `npm.cmd run build` in `frontend` | Passed: Next.js 15.5.24 compiled, generated 9 routes, and finalized optimization. |
+| Phase 10 `npm.cmd run db:seed` twice | Passed: deterministic development seed completed successfully and remained idempotent; only synthetic credentials were printed by the seed command. |
+| Phase 10 migration/index/constraint and hygiene verification | Passed: local PostgreSQL was reachable, pgvector indexes and project range constraints were applied, and no real `.env` or secret files were created. |
+| Phase 11 `npm.cmd run prisma:format`, `npm.cmd exec -- prisma migrate dev --name notification_related_entities`, and `npm.cmd exec -- prisma generate` | Passed after the required local Prisma client file-lock retry: notification migration `20260831033119_notification_related_entities` applied and client generated. Unsupported pgvector index drops were removed from the generated notification migration and local HNSW indexes were restored. |
+| Phase 11 `npm.cmd run format`, `npm.cmd run lint`, and `npm.cmd run typecheck` in `backend` | Passed. |
+| Phase 11 `RUN_COLLABORATION_INTEGRATION=true RUN_INDUSTRY_INTEGRATION=true RUN_NOTIFICATION_INTEGRATION=true DATABASE_URL=... npm.cmd test` in `backend` | Passed: 15 test files and 38 tests, including notification event creation, recipient isolation, mark-read/read-all behavior, and existing collaboration/project integration coverage. |
+| Phase 11 `npm.cmd run build` in `backend` and `DATABASE_URL=... npm.cmd exec -- prisma migrate status` | Passed: backend production build completed and database reported current with 12 migrations. |
+| Phase 11 frontend formatting, `npm.cmd exec -- tsc --noEmit --incremental false`, and `npm.cmd run lint` | Passed for the notification indicator, list page, API client, and shell integration. |
+| Phase 11 `NEXT_TELEMETRY_DISABLED=1 npm.cmd run build` in `frontend` | Passed: Next.js compiled and generated 10 routes, including `/notifications` and `/projects`. |
+| Phase 11 notification/event and repository hygiene verification | Passed: notification schema fields, pgvector indexes, and recipient-scoped queries verified; no real `.env`, private-key, or secret files were created. |
+| Phase 12 backend `npm.cmd run format`, `npm.cmd run lint`, and `npm.cmd run typecheck` | Passed after formatting the analytics repository, service, route test, and deterministic seed. |
+| Phase 12 `npm.cmd test -- analytics.routes` in `backend` | Passed: Ministry analytics route returned `200` for Ministry and `403` for a submitter. |
+| Phase 12 frontend formatting, `npm.cmd exec -- tsc --noEmit --incremental false`, `npm.cmd run lint`, and `npm.cmd run build` | Passed: modular Ministry analytics dashboard compiled and Next.js generated the `/ministry/analytics` route. |
+| Phase 12 `DATABASE_URL=... npm.cmd exec -- prisma validate` and `npm.cmd exec -- prisma migrate status` | Passed: Prisma schema valid and local database current with 13 migrations, including deduplicated industry proposal-view events. |
+| Phase 12 `DATABASE_URL=... npm.cmd run db:seed` | Passed: deterministic synthetic analytics fixtures seeded successfully, including active/completed projects, funding, milestones, and impact. |
+| Phase 12 live analytics API probe against `http://localhost:4400/api` | Passed: Ministry login and `GET /api/analytics/ministry` returned aggregated counts; submitter access returned `403`; response included active/completed projects and impact totals. |
+| Phase 12 live industry discovery/analytics probe against `http://localhost:4400/api` | Passed: seeded industry proposal discovery returned one eligible proposal; proposal detail access returned `200`; analytics reported tracked proposal views alongside active/completed projects. |
+| Phase 13 initial `$env:DATABASE_URL='postgresql://sicip_dev:local_placeholder_only@localhost:55432/sicip_dev?schema=public'; $env:RUN_E2E_INTEGRATION='true'; npm.cmd test -- mvp.integration` | Blocked: Docker engine was unavailable and PostgreSQL at `localhost:55432` could not be reached. No application data was changed by the failed test. |
+| Phase 13 Docker Desktop launch and `$env:POSTGRES_USER='sicip_dev'; $env:POSTGRES_PASSWORD='local_placeholder_only'; $env:POSTGRES_DB='sicip_dev'; docker compose ps` | Passed after starting Docker Desktop: `societal-innovation-postgres` is healthy on host port `55432`. |
+| Phase 13 `$env:DATABASE_URL='postgresql://sicip_dev:local_placeholder_only@localhost:55432/sicip_dev?schema=public'; npm.cmd exec -- prisma migrate status` | Passed: database schema is current with 13 migrations. |
+| Phase 13 `$env:DATABASE_URL='postgresql://sicip_dev:local_placeholder_only@localhost:55432/sicip_dev?schema=public'; npm.cmd run db:seed` | Passed: deterministic synthetic development seed completed successfully. |
+| Phase 13 `npm.cmd run format:check`, `npm.cmd run typecheck`, and `npm.cmd run lint` in `backend` | Passed. |
+| Phase 13 `$env:DATABASE_URL='postgresql://sicip_dev:local_placeholder_only@localhost:55432/sicip_dev?schema=public'; $env:RUN_E2E_INTEGRATION='true'; npm.cmd test -- mvp.integration` | Passed: deterministic mock-AI end-to-end journey completed, including concurrent university acceptance, cancellation, collaboration, project completion, impact, analytics, role isolation, unauthenticated access, and malformed-ID validation. |
+| Phase 13 `$env:DATABASE_URL='postgresql://sicip_dev:local_placeholder_only@localhost:55432/sicip_dev?schema=public'; $env:RUN_E2E_INTEGRATION='true'; $env:RUN_COLLABORATION_INTEGRATION='true'; $env:RUN_INDUSTRY_INTEGRATION='true'; $env:RUN_NOTIFICATION_INTEGRATION='true'; npm.cmd test` | Passed: 17 test files and 42 tests. |
+| Phase 13 `npm.cmd run build` in `backend` | Passed after filesystem-approved retry for Windows `dist` file locks. |
+| Phase 13 `npm.cmd exec -- tsc --noEmit --incremental false` and `npm.cmd run lint` in `frontend` | Passed. |
+| Phase 13 `$env:NEXT_TELEMETRY_DISABLED='1'; $env:CI='1'; npm.cmd run build` in `frontend` | Passed: Next.js compiled and generated 11 routes. |
+| Phase 13 final `git diff --check` | Passed: no whitespace errors. |
+| Phase 13 final environment/private-key/OpenAI-key filename and pattern scans | Passed: only `.env.example` and `backend/.env.example` exist; no real `.env`, private-key files, or key patterns were found. Seed credentials remain synthetic development-only values. |
+| Phase 14 `npm.cmd exec -- tsc --noEmit --incremental false` in `frontend` | Passed. |
+| Phase 14 `npm.cmd run lint` in `frontend` | Passed with no ESLint errors. |
+| Phase 14 frontend production build attempts (`npm.cmd run build`, `npm.cmd exec -- next build --debug`, `NEXT_PRIVATE_BUILD_WORKER=1 npm.cmd run build`, and `NEXT_DISABLE_SWC_WASM=1 npm.cmd run build`) | Not completed: each bounded attempt emitted the Next.js version banner and generated build artifacts, then stalled without completion in this Windows workspace; the processes were stopped. A clean-cache retry was blocked by Windows file locks on generated `.next` artifacts. |
+| Phase 14 frontend development server startup and HTTP route smoke check | Partial: backend started on port 4000 and Next.js started on port 3000, but the dev server did not respond within the bounded HTTP timeout while compiling; no route response was claimed. |
+| Phase 14 in-app browser route inspection | Not available: the configured browser connector returned `No browser is available`. |
+| Phase 14 `git diff --check` | Passed: no whitespace errors. |
 
-No frontend/backend format, lint, typecheck, test, or build commands exist yet because application packages have not been initialized.
+The first mixed-case table-count probe failed because PowerShell stripped PostgreSQL identifier quotes; the stdin-based corrected query passed. The first guard probe also omitted required `updatedAt` values in its temporary fixture; the corrected rolled-back transaction passed. One final `docker compose ps` probe was initially run without the required process-local variables; the corrected command passed.
+
+`npm.cmd audit --audit-level=high` reported 3 high-severity findings in Prisma's development dependency chain (`deepmerge-ts`); the suggested `npm audit fix --force` would make a breaking package change and was not applied.
+
+Project delivery, impact REST APIs, notifications, and Ministry analytics are implemented. Authentication/RBAC, the Phase 5 problem intake/lifecycle slice, the Phase 6 advisory AI problem-intelligence slice, the Phase 7 semantic university-matching slice, the Phase 8 university collaboration implementation, the Phase 9 industry collaboration implementation, the Phase 10 project lifecycle, the Phase 11 notification system, and the Phase 12 analytics dashboard are complete. Phase 13 verified the complete persisted problem-to-impact journey against local PostgreSQL/pgvector, including deterministic mock AI and concurrent university acceptance. Phase 14 completed the shared frontend UI/UX polish and responsive role workspaces; frontend typecheck and lint pass. The current Windows environment still prevents a bounded Phase 14 Next.js production build from completing, and no frontend test suite is configured yet.
