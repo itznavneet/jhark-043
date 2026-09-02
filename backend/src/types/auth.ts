@@ -23,6 +23,16 @@ export interface PublicUser {
 export interface LoginInput {
   email: string;
   password: string;
+  accountType: UserRole;
+}
+
+export interface SubmitterRegistrationInput {
+  email: string;
+  password: string;
+  displayName: string;
+  submitterType: SubmitterType;
+  organizationName?: string;
+  description?: string;
 }
 
 export interface RequestMetadata {

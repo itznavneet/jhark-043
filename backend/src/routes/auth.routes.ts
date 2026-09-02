@@ -11,6 +11,7 @@ import { TokenService } from "../services/token.service.js";
 import {
   changePasswordSchema,
   loginSchema,
+  submitterRegistrationSchema,
 } from "../validators/auth.validator.js";
 import { validateRequest } from "../validators/validate.js";
 
@@ -38,6 +39,11 @@ export function createAuthRoutes(
     "/login",
     validateRequest({ body: loginSchema }),
     controller.login,
+  );
+  router.post(
+    "/register/submitter",
+    validateRequest({ body: submitterRegistrationSchema }),
+    controller.registerSubmitter,
   );
   router.post("/refresh", controller.refresh);
   router.post("/logout", controller.logout);

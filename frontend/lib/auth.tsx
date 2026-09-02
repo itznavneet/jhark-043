@@ -1,14 +1,29 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { login, logout, refresh, type PublicUser } from "./api";
+import {
+  changePassword,
+  login,
+  logout,
+  refresh,
+  type LoginAccountType,
+  type PublicUser,
+} from "./api";
 
 interface AuthContextValue {
   accessToken: string | null;
   user: PublicUser | null;
   loading: boolean;
-  signIn(email: string, password: string): Promise<PublicUser>;
+  signIn(
+    email: string,
+    password: string,
+    accountType: LoginAccountType,
+  ): Promise<PublicUser>;
   signOut(): Promise<void>;
+  changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<PublicUser>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -33,8 +48,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       accessToken,
       user,
       loading,
-      async signIn(email, password) {
-        const payload = await login(email, password);
+      async signIn(email, password, accountType) {
+        const payload = await login(email, password, accountType);
         setAccessToken(payload.accessToken);
         setUser(payload.user);
         return payload.user;
@@ -43,6 +58,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await logout().catch(() => undefined);
         setAccessToken(null);
         setUser(null);
+      },
+      async changePassword(currentPassword, newPassword) {
+        if (!accessToken) throw new Error("Authentication is required");
+        const updatedUser = await changePassword(
+          currentPassword,
+          newPassword,
+          accessToken,
+        );
+        setUser(updatedUser);
+        return updatedUser;
       },
     }),
     [accessToken, loading, user],

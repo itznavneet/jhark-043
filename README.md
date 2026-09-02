@@ -1,6 +1,6 @@
 # Societal Innovation Collaboration Portal
 
-Societal Innovation Collaboration Portal is a planned production-style MVP for SIH Problem Statement 26043:
+Societal Innovation Collaboration Portal is a production-style MVP demonstration system for SIH Problem Statement 26043:
 
 > A digital platform to crowdsource societal challenges and facilitate collaborative problem solving through universities and industry partnerships.
 
@@ -70,6 +70,8 @@ npm.cmd run typecheck
 npm.cmd test
 npm.cmd run build
 ```
+
+From the repository root, `npm.cmd run prisma:studio` delegates to the backend Prisma configuration and opens Studio without requiring a duplicate root Prisma environment file.
 
 For Phase 7 local matching verification, run `docker compose up -d`, apply migrations with `DATABASE_URL=<local-url> npm.cmd exec -- prisma migrate deploy`, seed with `DATABASE_URL=<local-url> npm.cmd run db:seed`, then start the backend with `npm.cmd run dev`. Ministry clients can index approved universities with `POST /api/university-matching/knowledge/index` and match an approved problem with `POST /api/university-matching/problems/<problem-id>/match`. Without `OPENAI_API_KEY`, non-production matching uses deterministic local embeddings/ranking; production uses the configured OpenAI providers.
 

@@ -19,6 +19,7 @@ export function createAuthController(
   logout: RequestHandler;
   me: RequestHandler;
   changePassword: RequestHandler;
+  registerSubmitter: RequestHandler;
 } {
   return {
     login: asyncHandler(async (request, response) => {
@@ -33,6 +34,10 @@ export function createAuthController(
         environment,
       );
       sendSuccess(response, toClientAuthResponse(result));
+    }),
+    registerSubmitter: asyncHandler(async (request, response) => {
+      const user = await authService.registerSubmitter(request.body);
+      sendSuccess(response, { user }, 201);
     }),
     refresh: asyncHandler(async (request, response) => {
       const refreshToken = request.cookies?.[refreshCookieName];

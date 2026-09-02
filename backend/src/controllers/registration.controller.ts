@@ -13,6 +13,7 @@ export function createRegistrationController(
 ): {
   createOrganizationAccount: RequestHandler;
   submitApplication: RequestHandler;
+  submitPublicApplication: RequestHandler;
   listApplications: RequestHandler;
   getApplication: RequestHandler;
   approveApplication: RequestHandler;
@@ -32,6 +33,10 @@ export function createRegistrationController(
         request.auth!.role,
         request.body as RegistrationApplicationInput,
       );
+      sendSuccess(response, result, 201);
+    }),
+    submitPublicApplication: asyncHandler(async (request, response) => {
+      const result = await service.submitPublicApplication(request.body);
       sendSuccess(response, result, 201);
     }),
     listApplications: asyncHandler(async (request, response) => {

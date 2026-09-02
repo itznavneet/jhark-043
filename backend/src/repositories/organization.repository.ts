@@ -53,6 +53,17 @@ export interface CreateApplicationInput {
   applicationData: Prisma.InputJsonValue;
 }
 
+export interface CreatePublicApplicationInput {
+  applicantUserId: string;
+  applicantEmail: string;
+  applicantDisplayName: string;
+  passwordHash: string;
+  targetType: RegistrationTargetType;
+  organizationName: string;
+  registrationNumber?: string;
+  applicationData: Prisma.InputJsonValue;
+}
+
 export interface CreateOrganizationAccountInput {
   ministryUserId: string;
   targetType: RegistrationTargetType;
@@ -84,6 +95,13 @@ export class OrganizationRepository {
     return this.client.industry.findFirst({
       where: { users: { some: { id: userId } } },
       include: industryProfileInclude,
+    });
+  }
+
+  findUserByEmail(email: string): Promise<{ id: string } | null> {
+    return this.client.user.findUnique({
+      where: { email },
+      select: { id: true },
     });
   }
 
@@ -211,6 +229,35 @@ export class OrganizationRepository {
         applicationData: input.applicationData,
       },
       include: applicationInclude,
+    });
+  }
+
+  async createPublicApplication(
+    input: CreatePublicApplicationInput,
+  ): Promise<RegistrationApplicationRecord> {
+    return this.client.$transaction(async (transaction) => {
+      await transaction.user.create({
+        data: {
+          id: input.applicantUserId,
+          email: input.applicantEmail,
+          passwordHash: input.passwordHash,
+          role: roleForTarget(input.targetType),
+          displayName: input.applicantDisplayName,
+          isActive: false,
+          mustCompleteProfile: true,
+        },
+      });
+
+      return transaction.registrationApplication.create({
+        data: {
+          applicantUserId: input.applicantUserId,
+          targetType: input.targetType,
+          organizationName: input.organizationName,
+          registrationNumber: input.registrationNumber ?? null,
+          applicationData: input.applicationData,
+        },
+        include: applicationInclude,
+      });
     });
   }
 

@@ -44,9 +44,12 @@ export interface UniversityDetailsInput {
   name: string;
   shortName?: string;
   registrationNumber?: string;
+  phone?: string;
+  address?: string;
   description?: string;
   website?: string;
   city?: string;
+  district?: string;
   state?: string;
   country: string;
   faculty: FacultyInput[];
@@ -54,6 +57,9 @@ export interface UniversityDetailsInput {
   labs: LabInput[];
   facilities: FacilityInput[];
   previousProjects: PreviousProjectInput[];
+  departments?: string[];
+  capabilities?: string[];
+  applicationContact?: string;
 }
 
 export interface ExpertiseInput {
@@ -64,15 +70,24 @@ export interface ExpertiseInput {
 export interface IndustryDetailsInput {
   name: string;
   registrationNumber?: string;
+  organizationType?: string;
+  phone?: string;
+  address?: string;
   description?: string;
   website?: string;
   sector?: string;
   city?: string;
+  district?: string;
   state?: string;
   country: string;
   expertise: ExpertiseInput[];
   interestAreas: string[];
   supportCapabilities: ExpertiseInput[];
+  technologyAreas?: string[];
+  fundingCapability?: string;
+  technicalSupportCapability?: string;
+  fieldDeploymentCapability?: string;
+  contactPerson?: string;
 }
 
 export type OrganizationDetailsInput =
@@ -100,4 +115,15 @@ export interface CreatedOrganizationAccountResponse {
     email: string;
     temporaryPassword: string;
   };
+}
+
+export interface PublicRegistrationApplicationInput {
+  targetType: RegistrationTargetType;
+  applicant: {
+    email: string;
+    displayName: string;
+    password: string;
+    confirmPassword: string;
+  };
+  organization: OrganizationDetailsInput;
 }

@@ -13,6 +13,8 @@ import { TokenService } from "../services/token.service.js";
 import {
   ministryCreateOrganizationSchema,
   registrationApplicationSchema,
+  publicRegistrationApplicationSchema,
+  registrationApplicationIdParamsSchema,
   registrationListQuerySchema,
   rejectionSchema,
 } from "../validators/organization.validator.js";
@@ -45,6 +47,12 @@ export function createRegistrationRoutes(
   const router = Router();
 
   router.post(
+    "/public-applications",
+    validateRequest({ body: publicRegistrationApplicationSchema }),
+    controller.submitPublicApplication,
+  );
+
+  router.post(
     "/organizations",
     ...ministry,
     validateRequest({ body: ministryCreateOrganizationSchema }),
@@ -65,17 +73,22 @@ export function createRegistrationRoutes(
   router.get(
     "/applications/:applicationId",
     ...ministry,
+    validateRequest({ params: registrationApplicationIdParamsSchema }),
     controller.getApplication,
   );
   router.post(
     "/applications/:applicationId/approve",
     ...ministry,
+    validateRequest({ params: registrationApplicationIdParamsSchema }),
     controller.approveApplication,
   );
   router.post(
     "/applications/:applicationId/reject",
     ...ministry,
-    validateRequest({ body: rejectionSchema }),
+    validateRequest({
+      params: registrationApplicationIdParamsSchema,
+      body: rejectionSchema,
+    }),
     controller.rejectApplication,
   );
 

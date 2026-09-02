@@ -59,4 +59,16 @@ describe("backend foundation", () => {
     expect(response.body.error.message).toContain("Route not found");
     expect(response.body.error.stack).toBeUndefined();
   });
+
+  it("returns a client error for malformed JSON", async () => {
+    const app = createApp({ environment: testEnvironment });
+    const response = await request(app)
+      .post("/api/auth/login")
+      .set("content-type", "application/json")
+      .send('{"email":');
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe("INVALID_JSON");
+    expect(response.body.error.stack).toBeUndefined();
+  });
 });

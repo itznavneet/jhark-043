@@ -15,10 +15,14 @@ export const problemEvidenceSchema = z
     fileSizeBytes: z.number().int().nonnegative().max(50_000_000).optional(),
     externalUrl: z.url().max(1000).optional(),
   })
-  .refine((evidence) => evidence.storageKey || evidence.externalUrl, {
-    message: "Evidence must include a storage key or external URL",
-    path: ["externalUrl"],
-  });
+  .refine(
+    (evidence) =>
+      Boolean(evidence.storageKey) !== Boolean(evidence.externalUrl),
+    {
+      message: "Evidence must include exactly one storage key or external URL",
+      path: ["externalUrl"],
+    },
+  );
 
 export const createProblemSchema = z.object({
   title: z.string().trim().min(5).max(255),

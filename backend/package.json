@@ -11,6 +11,7 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"prisma/seed.ts\" \"*.json\" \"*.mjs\"",
     "lint": "eslint .",
     "prisma:format": "prisma format",
+    "prisma:studio": "prisma studio",
     "prisma:validate": "prisma validate",
     "start": "node dist/src/server.js",
     "test": "vitest run",

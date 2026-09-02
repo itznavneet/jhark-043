@@ -20,6 +20,23 @@ export interface AuthPayload {
   user: PublicUser;
 }
 
+export type LoginAccountType =
+  "SUBMITTER" | "UNIVERSITY" | "INDUSTRY" | "MINISTRY_ADMIN";
+
+export interface RegistrationApplication {
+  id: string;
+  targetType: "UNIVERSITY" | "INDUSTRY";
+  organizationName: string;
+  registrationNumber: string | null;
+  status: string;
+  applicationData: Record<string, unknown>;
+  applicantUserId: string;
+  reviewedAt: string | null;
+  reviewReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ProblemEvidence {
   id?: string;
   type: "IMAGE" | "VIDEO" | "DOCUMENT";
@@ -582,11 +599,74 @@ export async function apiRequest<T>(
 export async function login(
   email: string,
   password: string,
+  accountType: LoginAccountType,
 ): Promise<AuthPayload> {
   return apiRequest<AuthPayload>("/auth/login", {
     method: "POST",
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, accountType }),
   });
+}
+
+export async function registerSubmitter(input: {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  displayName: string;
+  submitterType: "INDIVIDUAL_CITIZEN" | "PANCHAYATI_RAJ" | "ORGANIZATION";
+  organizationName?: string;
+  description?: string;
+}): Promise<PublicUser> {
+  const result = await apiRequest<{ user: PublicUser }>(
+    "/auth/register/submitter",
+    { method: "POST", body: JSON.stringify(input) },
+  );
+  return result.user;
+}
+
+export async function submitOrganizationApplication(
+  input: unknown,
+): Promise<RegistrationApplication> {
+  return apiRequest<RegistrationApplication>(
+    "/registrations/public-applications",
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+export async function listRegistrationApplications(
+  accessToken: string,
+  status = "PENDING",
+): Promise<RegistrationApplication[]> {
+  return apiRequest<RegistrationApplication[]>(
+    `/registrations/applications?status=${encodeURIComponent(status)}`,
+    undefined,
+    accessToken,
+  );
+}
+
+export async function approveRegistrationApplication(
+  applicationId: string,
+  accessToken: string,
+): Promise<RegistrationApplication> {
+  return apiRequest<RegistrationApplication>(
+    `/registrations/applications/${applicationId}/approve`,
+    { method: "POST" },
+    accessToken,
+  );
+}
+
+export async function rejectRegistrationApplication(
+  applicationId: string,
+  reason: string,
+  accessToken: string,
+): Promise<RegistrationApplication> {
+  return apiRequest<RegistrationApplication>(
+    `/registrations/applications/${applicationId}/reject`,
+    { method: "POST", body: JSON.stringify({ reason }) },
+    accessToken,
+  );
 }
 
 export async function refresh(): Promise<AuthPayload> {
@@ -595,6 +675,19 @@ export async function refresh(): Promise<AuthPayload> {
 
 export async function logout(): Promise<void> {
   await apiRequest("/auth/logout", { method: "POST" });
+}
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+  accessToken: string,
+): Promise<PublicUser> {
+  const result = await apiRequest<{ user: PublicUser }>(
+    "/auth/change-password",
+    { method: "POST", body: JSON.stringify({ currentPassword, newPassword }) },
+    accessToken,
+  );
+  return result.user;
 }
 
 export async function listIndustryProposals(

@@ -1,4 +1,5 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
+import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import {
   RegistrationStatus,
@@ -17,6 +18,7 @@ import {
   industryDetailsSchema,
   type MinistryCreateOrganizationInput,
   type RegistrationApplicationInput,
+  type PublicRegistrationApplicationInput,
   universityDetailsSchema,
 } from "../validators/organization.validator.js";
 import { toPublicUser } from "./auth.service.js";
@@ -31,6 +33,9 @@ export interface RegistrationServiceContract {
     applicantUserId: string,
     applicantRole: UserRole,
     input: RegistrationApplicationInput,
+  ): Promise<OrganizationApplicationResponse>;
+  submitPublicApplication(
+    input: PublicRegistrationApplicationInput,
   ): Promise<OrganizationApplicationResponse>;
   listApplications(
     status?: RegistrationStatus,
@@ -58,6 +63,7 @@ export class RegistrationService implements RegistrationServiceContract {
     ministryUserId: string,
     input: MinistryCreateOrganizationInput,
   ): Promise<CreatedOrganizationAccountResponse> {
+    await this.ensureEmailAvailable(input.email);
     await this.ensureOrganizationAvailable(
       input.organization.name,
       input.organization.registrationNumber,
@@ -118,6 +124,52 @@ export class RegistrationService implements RegistrationServiceContract {
       applicationData: toJsonValue(input.organization),
     });
     return toApplicationResponse(application);
+  }
+
+  async submitPublicApplication(
+    input: PublicRegistrationApplicationInput,
+  ): Promise<OrganizationApplicationResponse> {
+    await this.ensureOrganizationAvailable(
+      input.organization.name,
+      input.organization.registrationNumber,
+    );
+    if (
+      await this.repository.findUserByEmail(
+        input.applicant.email.trim().toLowerCase(),
+      )
+    ) {
+      throw new AppError(
+        "An account with this email already exists",
+        409,
+        "EMAIL_ALREADY_REGISTERED",
+      );
+    }
+
+    try {
+      const application = await this.repository.createPublicApplication({
+        applicantUserId: randomUUID(),
+        applicantEmail: input.applicant.email.trim().toLowerCase(),
+        applicantDisplayName: input.applicant.displayName,
+        passwordHash: await bcrypt.hash(input.applicant.password, 12),
+        targetType: input.targetType,
+        organizationName: input.organization.name,
+        registrationNumber: input.organization.registrationNumber,
+        applicationData: toJsonValue(input.organization),
+      });
+      return toApplicationResponse(application);
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        throw new AppError(
+          "An account with this email already exists",
+          409,
+          "EMAIL_ALREADY_REGISTERED",
+        );
+      }
+      throw error;
+    }
   }
 
   async listApplications(
@@ -193,6 +245,16 @@ export class RegistrationService implements RegistrationServiceContract {
         "An organization with the same name or registration number already exists",
         409,
         "DUPLICATE_ORGANIZATION",
+      );
+    }
+  }
+
+  private async ensureEmailAvailable(email: string): Promise<void> {
+    if (await this.repository.findUserByEmail(email.trim().toLowerCase())) {
+      throw new AppError(
+        "An account with this email already exists",
+        409,
+        "EMAIL_ALREADY_REGISTERED",
       );
     }
   }

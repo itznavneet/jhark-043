@@ -1,0 +1,8 @@
+{
+  "name": "societal-innovation-collaboration-portal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "prisma:studio": "npm --prefix backend run prisma:studio --"
+  }
+}

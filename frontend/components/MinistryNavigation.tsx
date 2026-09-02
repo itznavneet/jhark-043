@@ -7,7 +7,7 @@ const links = [
   {
     label: "Registration Applications",
     href: "/ministry/registrations",
-    available: false,
+    available: true,
   },
   {
     label: "AI Recommendations",

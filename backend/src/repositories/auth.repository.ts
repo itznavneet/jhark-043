@@ -1,4 +1,4 @@
-import { Prisma, type PrismaClient } from "@prisma/client";
+import { Prisma, type PrismaClient, type SubmitterType } from "@prisma/client";
 import { database } from "../config/database.js";
 
 export const authUserSelect = {
@@ -56,12 +56,43 @@ export interface RotateRefreshSessionInput extends CreateRefreshSessionInput {
   sessionId: string;
 }
 
+export interface CreateSubmitterInput {
+  id: string;
+  email: string;
+  passwordHash: string;
+  displayName: string;
+  submitterType: SubmitterType;
+  organizationName?: string;
+  description?: string;
+}
+
 export class AuthRepository {
   constructor(private readonly client: PrismaClient = database) {}
 
   findUserByEmail(email: string): Promise<AuthUserRecord | null> {
     return this.client.user.findUnique({
       where: { email },
+      select: authUserSelect,
+    });
+  }
+
+  createSubmitter(input: CreateSubmitterInput): Promise<AuthUserRecord> {
+    return this.client.user.create({
+      data: {
+        id: input.id,
+        email: input.email,
+        passwordHash: input.passwordHash,
+        role: "SUBMITTER",
+        displayName: input.displayName,
+        submitterProfile: {
+          create: {
+            type: input.submitterType,
+            displayName: input.displayName,
+            organizationName: input.organizationName ?? null,
+            description: input.description ?? null,
+          },
+        },
+      },
       select: authUserSelect,
     });
   }

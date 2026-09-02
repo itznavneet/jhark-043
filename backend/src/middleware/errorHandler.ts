@@ -73,9 +73,35 @@ function normalizeError(error: unknown): {
     };
   }
 
+  if (isRequestBodyError(error)) {
+    return error.type === "entity.too.large"
+      ? {
+          statusCode: 413,
+          code: "REQUEST_TOO_LARGE",
+          message: "Request body is too large",
+        }
+      : {
+          statusCode: 400,
+          code: "INVALID_JSON",
+          message: "Request body contains invalid JSON",
+        };
+  }
+
   return {
     statusCode: 500,
     code: "INTERNAL_SERVER_ERROR",
     message: "An unexpected error occurred",
   };
+}
+
+function isRequestBodyError(
+  error: unknown,
+): error is { type: string; status?: number; statusCode?: number } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "type" in error &&
+    typeof error.type === "string" &&
+    ["entity.parse.failed", "entity.too.large"].includes(error.type)
+  );
 }

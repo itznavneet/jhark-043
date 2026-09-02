@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import type { AppEnvironment } from "../config/environment.js";
 import {
@@ -10,6 +12,7 @@ import type {
   LoginInput,
   PublicUser,
   RequestMetadata,
+  SubmitterRegistrationInput,
 } from "../types/auth.js";
 import { AppError } from "../utils/appError.js";
 import { TokenService, type RefreshTokenMaterial } from "./token.service.js";
@@ -27,6 +30,7 @@ export interface AuthServiceContract {
     input: LoginInput,
     metadata: RequestMetadata,
   ): Promise<InternalAuthResult>;
+  registerSubmitter(input: SubmitterRegistrationInput): Promise<PublicUser>;
   refresh(
     refreshToken: string,
     metadata: RequestMetadata,
@@ -63,7 +67,53 @@ export class AuthService implements AuthServiceContract {
       throw invalidCredentialsError();
     }
 
+    if (user.role !== input.accountType) {
+      throw new AppError(
+        `This account is registered as a ${roleLabel(user.role)} account. Please select ${roleLabel(user.role)}.`,
+        401,
+        "ACCOUNT_TYPE_MISMATCH",
+      );
+    }
+
     return this.createAuthResult(user, metadata);
+  }
+
+  async registerSubmitter(
+    input: SubmitterRegistrationInput,
+  ): Promise<PublicUser> {
+    const email = input.email.trim().toLowerCase();
+    if (await this.repository.findUserByEmail(email)) {
+      throw new AppError(
+        "An account with this email already exists",
+        409,
+        "EMAIL_ALREADY_REGISTERED",
+      );
+    }
+
+    try {
+      const user = await this.repository.createSubmitter({
+        id: randomUUID(),
+        email,
+        passwordHash: await bcrypt.hash(input.password, 12),
+        displayName: input.displayName,
+        submitterType: input.submitterType,
+        organizationName: input.organizationName,
+        description: input.description,
+      });
+      return toPublicUser(user);
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        throw new AppError(
+          "An account with this email already exists",
+          409,
+          "EMAIL_ALREADY_REGISTERED",
+        );
+      }
+      throw error;
+    }
   }
 
   async refresh(
@@ -204,6 +254,15 @@ function isUsableRefreshSession(
     session.expiresAt.getTime() > Date.now() &&
     session.user.isActive,
   );
+}
+
+function roleLabel(role: AuthUserRecord["role"]): string {
+  return {
+    MINISTRY_ADMIN: "Ministry",
+    SUBMITTER: "Citizen / Submitter",
+    UNIVERSITY: "University",
+    INDUSTRY: "Industry",
+  }[role];
 }
 
 export function toPublicUser(user: AuthUserRecord): PublicUser {
