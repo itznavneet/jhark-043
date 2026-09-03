@@ -471,3 +471,28 @@ This remains an MVP/SIH demonstration system, not production-ready.
 2. Use `/register` for a submitter account, or the separate University/Industry application links for partner onboarding.
 3. Ministry reviews pending applications at `/ministry/registrations`; approval activates the applicant account and rejection does not.
 4. Continue the existing problem-to-impact journey from the runbook using the seeded accounts.
+
+## Ministry invitation dispatch fix (2026-09-02)
+
+### COMPLETED
+
+- Fixed the Ministry university matching panel so approving recommendations is followed by an explicit `Send invitations to approved universities` action.
+- The panel now calls the existing protected invitation-dispatch endpoint, refreshes Ministry invitation state, and updates the problem status to `INVITATIONS_SENT`.
+- The Ministry view includes `INVITATIONS_SENT` problems and displays the invited university names and assignment statuses.
+- Existing problems already in `MINISTRY_APPROVED_UNIVERSITIES` can be dispatched without rerunning matching.
+
+### VERIFIED COMMANDS
+
+| Command/check | Result |
+| --- | --- |
+| Live reproduction against `http://localhost:4000/api` | Passed: reproduced a problem in `MINISTRY_APPROVED_UNIVERSITIES` with 2 approved matches and 0 assignments. |
+| Live invitation dispatch for the existing approved matches | Passed: created 2 `INVITED` assignments, including Birla Institute of Technology, Mesra. |
+| Live university assignment check | Passed: the linked university account returned the invitation from `GET /api/collaboration/university/assignments`. |
+| `frontend: npm.cmd run lint` | Passed with no ESLint errors after the fix. |
+| `frontend: npm.cmd exec -- tsc --noEmit --incremental false` | Passed. |
+| `backend: npm.cmd run lint` | Passed. |
+| `backend: npm.cmd test` | Passed: 14 test files, 42 passed tests, 4 integration files skipped without opt-in flags. |
+
+### DEMO NOTE
+
+After Ministry selects and approves the final universities, click `Send invitations to approved universities`. The University dashboard then shows the invitation after refresh or re-login. Recommendations approved before this UI fix require this one dispatch action; they are not assigned automatically retroactively.

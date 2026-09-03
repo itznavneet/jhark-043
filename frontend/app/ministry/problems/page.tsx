@@ -4,7 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "../../../components/AppShell";
 import { UniversityMatchingPanel } from "../../../components/UniversityMatchingPanel";
 import { LifecycleStepper } from "../../../components/LifecycleStepper";
-import { ErrorAlert, EmptyState, PageHeader, Panel, StatusBadge } from "../../../components/ui";
+import {
+  ErrorAlert,
+  EmptyState,
+  PageHeader,
+  Panel,
+  StatusBadge,
+} from "../../../components/ui";
 import {
   apiRequest,
   type Problem,
@@ -123,15 +129,40 @@ export default function MinistryProblemsPage() {
     }
   }
 
-  if (loading || !user || !accessToken) return <main className="grid min-h-screen place-items-center text-slate-500">Loading Ministry workspace...</main>;
+  function updateSelectedStatus(status: string) {
+    setSelected((current) =>
+      current ? { ...current, currentStatus: status } : current,
+    );
+    setProblems((items) =>
+      items.map((item) =>
+        item.id === selected?.id ? { ...item, currentStatus: status } : item,
+      ),
+    );
+  }
+
+  if (loading || !user || !accessToken)
+    return (
+      <main className="grid min-h-screen place-items-center text-slate-500">
+        Loading Ministry workspace...
+      </main>
+    );
   return (
     <AppShell>
-      <PageHeader eyebrow="Ministry review" title="Societal problem intelligence" description="Review AI analysis and university recommendations as advisory evidence. Ministry actions remain authoritative." />
+      <PageHeader
+        eyebrow="Ministry review"
+        title="Societal problem intelligence"
+        description="Review AI analysis and university recommendations as advisory evidence. Ministry actions remain authoritative."
+      />
       {error ? (
-        <div className="mt-5"><ErrorAlert message={error} /></div>
+        <div className="mt-5">
+          <ErrorAlert message={error} />
+        </div>
       ) : null}
       <div className="mt-7 grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="panel h-fit space-y-3 p-4" aria-label="Problems awaiting Ministry review">
+        <aside
+          className="panel h-fit space-y-3 p-4"
+          aria-label="Problems awaiting Ministry review"
+        >
           {problems.map((problem) => (
             <button
               className={`w-full rounded-xl p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${selected?.id === problem.id ? "bg-teal-50 ring-1 ring-accent" : "hover:bg-slate-50"}`}
@@ -142,11 +173,16 @@ export default function MinistryProblemsPage() {
                 {problem.category?.name ?? "Uncategorized"}
               </p>
               <p className="mt-1 font-semibold text-ink">{problem.title}</p>
-              <div className="mt-2"><StatusBadge status={problem.currentStatus} /></div>
+              <div className="mt-2">
+                <StatusBadge status={problem.currentStatus} />
+              </div>
             </button>
           ))}
           {problems.length === 0 ? (
-            <EmptyState title="No submitted problems" description="New challenges will appear here for review." />
+            <EmptyState
+              title="No submitted problems"
+              description="New challenges will appear here for review."
+            />
           ) : null}
         </aside>
         {selected ? (
@@ -212,10 +248,12 @@ export default function MinistryProblemsPage() {
               "AI_UNIVERSITY_MATCHED",
               "UNIVERSITIES_RECOMMENDED",
               "MINISTRY_APPROVED_UNIVERSITIES",
+              "INVITATIONS_SENT",
             ].includes(selected.currentStatus) ? (
               <UniversityMatchingPanel
                 accessToken={accessToken}
                 problem={selected}
+                onProblemStatusChange={updateSelectedStatus}
               />
             ) : null}
           </section>
@@ -264,7 +302,10 @@ function AiPanel({
     return (
       <section className="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200">
         <div className="flex items-center justify-between gap-4">
-          <div><p className="section-eyebrow">AI recommendation</p><h2 className="section-title">Problem intelligence</h2></div>
+          <div>
+            <p className="section-eyebrow">AI recommendation</p>
+            <h2 className="section-title">Problem intelligence</h2>
+          </div>
           <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             {analysis.processingStatus}
           </span>
@@ -286,7 +327,10 @@ function AiPanel({
   return (
     <section className="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><p className="section-eyebrow">AI recommendation</p><h2 className="section-title">Problem intelligence</h2></div>
+        <div>
+          <p className="section-eyebrow">AI recommendation</p>
+          <h2 className="section-title">Problem intelligence</h2>
+        </div>
         <span
           className={`rounded-full px-3 py-1 text-xs font-semibold ${analysis.isSocietalProblem ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}
         >
@@ -329,7 +373,8 @@ function AiPanel({
         values={analysis.potentialSolutionAreas}
       />
       <p className="mt-6 border-t border-slate-100 pt-4 text-xs text-slate-400">
-        Advisory model output: {analysis.modelName ?? "unknown"}. This is not a Ministry decision.
+        Advisory model output: {analysis.modelName ?? "unknown"}. This is not a
+        Ministry decision.
       </p>
     </section>
   );

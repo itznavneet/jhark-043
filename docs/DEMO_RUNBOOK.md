@@ -125,7 +125,7 @@ The complete account table is available in [DEMO_ACCOUNTS.md](DEMO_ACCOUNTS.md).
 |    3 | Ministry                | Open `/ministry/problems` and request AI analysis                         | With no key, a safe `FAILED` attempt is visible; with a key, structured analysis is stored |
 |    4 | Ministry                | Move the problem to `MINISTRY_REVIEW`, then `MINISTRY_APPROVED`           | Each transition is validated and written to status history                                 |
 |    5 | Ministry                | Run matching and review recommendations                                   | `AI_UNIVERSITY_MATCHED` then `UNIVERSITIES_RECOMMENDED`; evidence and scores are visible   |
-|    6 | Ministry                | Remove one recommendation, approve the final list, and send invitations   | Approved assignments become `INVITED`; universities receive notifications                  |
+|    6 | Ministry                | Remove one recommendation, approve the final list, then click `Send invitations to approved universities` | Approved assignments become `INVITED`; universities receive notifications                  |
 |    7 | Two university sessions | Accept the same problem at nearly the same time                           | Exactly one acceptance succeeds; competing pending assignment is `CANCELLED`               |
 |    8 | Winning university      | Save a faculty mentor and research members                                | `ProjectTeam` and `TeamMember` rows exist; problem becomes `TEAM_FORMED`                   |
 |    9 | Winning university      | Save proposal draft, then submit it                                       | Proposal becomes `SUBMITTED`; industry can now discover it                                 |
