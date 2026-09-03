@@ -268,6 +268,7 @@ model User {
   authoredProjectUpdates ProjectUpdate[]           @relation("ProjectUpdateAuthor")
   projectStatusChanges   ProjectStatusHistory[]    @relation("ProjectStatusActor")
   notifications          Notification[]            @relation("NotificationRecipient")
+  problemUpvotes         ProblemUpvote[]
 
   @@index([role])
   @@index([universityId])
@@ -343,12 +344,26 @@ model Problem {
   universityAssignments UniversityProblemAssignment[]
   teams                 ProjectTeam[]
   proposals             Proposal[]
+  upvotes               ProblemUpvote[]
 
   @@index([submitterId, createdAt])
   @@index([currentStatus])
   @@index([categoryId])
   @@index([district, block])
   @@index([priority])
+}
+
+model ProblemUpvote {
+  id        String   @id @default(uuid()) @db.Uuid
+  problemId String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([problemId, userId])
+  @@index([problemId, createdAt])
+  @@index([userId, createdAt])
 }
 
 model ProblemEvidence {

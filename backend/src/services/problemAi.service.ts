@@ -18,6 +18,7 @@ import { AppError } from "../utils/appError.js";
 
 export interface ProblemAiServiceContract {
   triggerAnalysis(problemId: string): Promise<ProblemAnalysisView>;
+  processSubmittedProblem(problemId: string): Promise<ProblemAnalysisView>;
   retryAnalysis(problemId: string): Promise<ProblemAnalysisView>;
   getAnalysis(problemId: string): Promise<ProblemAnalysisCollection>;
 }
@@ -30,6 +31,14 @@ export class ProblemAiService implements ProblemAiServiceContract {
 
   async triggerAnalysis(problemId: string): Promise<ProblemAnalysisView> {
     return this.runAnalysis(problemId);
+  }
+
+  async processSubmittedProblem(
+    problemId: string,
+  ): Promise<ProblemAnalysisView> {
+    const analysis = await this.runAnalysis(problemId);
+    await this.applySubmissionGate(problemId, analysis);
+    return analysis;
   }
 
   async retryAnalysis(problemId: string): Promise<ProblemAnalysisView> {
@@ -51,7 +60,9 @@ export class ProblemAiService implements ProblemAiServiceContract {
         "AI_RETRY_NOT_AVAILABLE",
       );
     }
-    return this.runAnalysis(problemId);
+    const analysis = await this.runAnalysis(problemId);
+    await this.applySubmissionGate(problemId, analysis);
+    return analysis;
   }
 
   async getAnalysis(problemId: string): Promise<ProblemAnalysisCollection> {
@@ -97,6 +108,21 @@ export class ProblemAiService implements ProblemAiServiceContract {
       return toAnalysisView(failed);
     }
   }
+
+  private async applySubmissionGate(
+    problemId: string,
+    analysis: ProblemAnalysisView,
+  ): Promise<void> {
+    if (
+      analysis.processingStatus === "COMPLETED" &&
+      this.repository.applyValidationStatus
+    ) {
+      await this.repository.applyValidationStatus(
+        problemId,
+        analysis.isSocietalProblem === true,
+      );
+    }
+  }
 }
 
 export interface ProblemAiRepositoryContract {
@@ -105,6 +131,7 @@ export interface ProblemAiRepositoryContract {
   markProcessing: ProblemAiRepository["markProcessing"];
   markCompleted: ProblemAiRepository["markCompleted"];
   markFailed: ProblemAiRepository["markFailed"];
+  applyValidationStatus?: ProblemAiRepository["applyValidationStatus"];
   findAnalyses: ProblemAiRepository["findAnalyses"];
 }
 

@@ -65,7 +65,7 @@ describe.skipIf(!runIntegrationTests)(
 
         const notifications = new NotificationRepository(client);
         expect(await notifications.countUnread(submitter.id)).toBe(1);
-        expect(await notifications.countUnread(ministry.id)).toBe(1);
+        expect(await notifications.countUnread(ministry.id)).toBe(0);
         expect(
           await notifications.listForRecipient(otherSubmitter.id),
         ).toHaveLength(0);

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { UserRole } from "@prisma/client";
 import type { AppEnvironment } from "../config/environment.js";
 import { OpenAiProblemAnalysisProvider } from "../ai/openAiProblemAnalysis.provider.js";
+import { DevelopmentProblemAnalysisProvider } from "../ai/developmentProblemAnalysis.provider.js";
 import { createProblemAiController } from "../controllers/problemAi.controller.js";
 import { createAuthenticate } from "../middleware/authenticate.js";
 import { requireRole } from "../middleware/requireRole.js";
@@ -32,7 +33,9 @@ export function createProblemAiRoutes(
     dependencies.service ??
     new ProblemAiService(
       new ProblemAiRepository(),
-      new OpenAiProblemAnalysisProvider(environment),
+      environment.openAiApiKey
+        ? new OpenAiProblemAnalysisProvider(environment)
+        : new DevelopmentProblemAnalysisProvider(),
     );
   const authenticate = createAuthenticate(tokenService, authRepository);
   const ministry = [

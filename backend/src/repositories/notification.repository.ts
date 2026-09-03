@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   NotificationType,
   Prisma,
@@ -67,11 +68,18 @@ export class NotificationRepository {
   ) {
     const uniqueIds = [...new Set(recipientIds)];
     if (!uniqueIds.length) return Promise.resolve({ count: 0 });
-    return this.client.notification.createMany({
-      data: uniqueIds.map((recipientId) =>
-        notificationData({ ...input, recipientId }),
-      ),
-    });
+    const rows = uniqueIds.map(
+      (recipientId) =>
+        Prisma.sql`(${randomUUID()}::uuid, ${recipientId}::uuid, ${input.type}::"NotificationType", ${input.title}, ${input.message}, ${input.relatedEntityType ?? null}, ${input.relatedEntityId ?? null}::uuid, ${input.metadata ? JSON.stringify(input.metadata) : null}::jsonb, ${new Date()})`,
+    );
+    return this.client
+      .$executeRaw(
+        Prisma.sql`INSERT INTO "Notification" ("id", "recipientId", "type", "title", "message", "relatedEntityType", "relatedEntityId", "metadata", "createdAt")
+        SELECT row_data."id", row_data."recipientId", row_data."type", row_data."title", row_data."message", row_data."relatedEntityType", row_data."relatedEntityId", row_data."metadata", row_data."createdAt"
+        FROM (VALUES ${Prisma.join(rows)}) AS row_data("id", "recipientId", "type", "title", "message", "relatedEntityType", "relatedEntityId", "metadata", "createdAt")
+        INNER JOIN "User" recipient ON recipient."id" = row_data."recipientId" AND recipient."isActive" = true`,
+      )
+      .then((count) => ({ count }));
   }
 
   userIdsForRole(role: UserRole) {
@@ -92,6 +100,13 @@ export class NotificationRepository {
     return this.client.user.findMany({
       where: { industryId, isActive: true },
       select: { id: true },
+    });
+  }
+
+  emailsForUsers(userIds: string[]) {
+    return this.client.user.findMany({
+      where: { id: { in: [...new Set(userIds)] }, isActive: true },
+      select: { email: true },
     });
   }
 }

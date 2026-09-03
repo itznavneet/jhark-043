@@ -6,6 +6,7 @@ import { useAuth } from "../lib/auth";
 import Link from "next/link";
 import type { LoginAccountType } from "../lib/api";
 import { ErrorAlert, PrimaryButton } from "./ui";
+import { PasswordField } from "./PasswordField";
 
 export function LoginForm() {
   const router = useRouter();
@@ -127,23 +128,14 @@ export function LoginForm() {
                   ))}
                 </div>
               </fieldset>
-              <div>
-                <label
-                  className="text-sm font-semibold text-slate-700"
-                  htmlFor="login-password"
-                >
-                  Password
-                </label>
-                <input
-                  className="mt-2 w-full px-3 py-2.5"
-                  id="login-password"
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
-              </div>
+              <PasswordField
+                id="login-password"
+                label="Password"
+                value={password}
+                onChange={setPassword}
+                autoComplete="current-password"
+                required
+              />
               {error ? <ErrorAlert message={error} /> : null}
               <PrimaryButton
                 className="w-full"

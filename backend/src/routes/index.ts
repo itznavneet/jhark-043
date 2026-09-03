@@ -13,6 +13,7 @@ import { createIndustryCollaborationRoutes } from "./industryCollaboration.route
 import { createProjectRoutes } from "./project.routes.js";
 import { createNotificationRoutes } from "./notification.routes.js";
 import { createAnalyticsRoutes } from "./analytics.routes.js";
+import { createCommunityRoutes } from "./community.routes.js";
 
 export function createApiRoutes(
   environment: AppEnvironment,
@@ -39,6 +40,7 @@ export function createApiRoutes(
   router.use("/projects", createProjectRoutes(environment));
   router.use("/notifications", createNotificationRoutes(environment));
   router.use("/analytics", createAnalyticsRoutes(environment));
+  router.use("/community", createCommunityRoutes(environment));
   router.use("/health", createHealthRoutes(healthService));
   return router;
 }

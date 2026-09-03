@@ -4,10 +4,12 @@ import {
   Prisma,
   type PrismaClient,
   ProblemPriority,
+  ProblemStatus,
 } from "@prisma/client";
 import { database } from "../config/database.js";
 import type { ProblemAnalysisOutput, ProblemForAnalysis } from "../types/ai.js";
 import { notifyAiAnalysisCompleted } from "../services/notificationEvents.js";
+import { notifyProblemLifecycle } from "../services/notificationEvents.js";
 
 const analysisInclude = {
   category: { select: { id: true, name: true } },
@@ -136,6 +138,36 @@ export class ProblemAiRepository {
       output.isSocietalProblem,
     );
     return analysis;
+  }
+
+  async applyValidationStatus(
+    problemId: string,
+    isSocietalProblem: boolean,
+  ): Promise<void> {
+    const nextStatus = isSocietalProblem
+      ? ProblemStatus.AI_VALIDATED
+      : ProblemStatus.AI_REJECTED;
+    await this.client.$transaction(async (transaction) => {
+      const updated = await transaction.problem.updateMany({
+        where: { id: problemId, currentStatus: ProblemStatus.SUBMITTED },
+        data: { currentStatus: nextStatus },
+      });
+      if (updated.count !== 1) {
+        return;
+      }
+      await transaction.problemStatusHistory.create({
+        data: {
+          problemId,
+          oldStatus: ProblemStatus.SUBMITTED,
+          newStatus: nextStatus,
+          reason: isSocietalProblem
+            ? "AI validated the submission for community support"
+            : "AI rejected the submission as outside the societal innovation scope",
+          metadata: { source: "ai_validation" },
+        },
+      });
+      await notifyProblemLifecycle(transaction, problemId, nextStatus);
+    });
   }
 
   markFailed(

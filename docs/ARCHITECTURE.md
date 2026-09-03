@@ -4,7 +4,7 @@
 
 This document describes the architecture at Phase 14. The database/domain, Express infrastructure, authentication/RBAC, organization registration, structured organization profiles, problem intake/lifecycle, advisory AI analysis, semantic university matching, university/industry collaboration, project delivery tracking, in-app notifications, Ministry analytics, and the shared role-aware frontend experience are implemented. Backend behavior is verified against local PostgreSQL, including the deterministic end-to-end journey.
 
-## Frontend (implemented Phases 5-12 slices; broader UI planned)
+## Frontend (implemented Phases 5-14 slices; broader UI planned)
 
 The frontend is a standalone Next.js application written in TypeScript and styled with Tailwind CSS. Implemented slices include login, submitter problem form/list/detail/timeline, the Ministry problem-intelligence workspace with semantic university recommendations and review actions, a university workspace for assigned problems, invitation response, team management, proposal drafting/submission, an industry workspace for proposal discovery/filtering/support/collaboration, a project delivery workspace, a refresh-based notification indicator/list, and a modular Ministry analytics dashboard. The analytics UI uses reusable KPI cards, bar lists, time-series visualization, decision/impact panels, and participation tables.
 
@@ -71,9 +71,9 @@ problem -> embedding -> cosine retrieval -> grouped candidate evidence
 
 `OpenAiProblemAnalysisProvider` and `OpenAiUniversityRankingProvider` send only the information required for analysis/ranking, request strict JSON Schema responses, and validate results again with Zod. `OpenAiEmbeddingProvider` calls the embeddings endpoint with a fixed 1,536-dimension contract. Prompts and schemas are isolated under `backend/src/ai/`. Problem analysis and university matching runs persist processing status, model metadata, safe failure reasons, and retryable attempts.
 
-AI will provide validation, categorization, extraction, and explanations. It will never approve or reject a problem, university, invitation, or collaboration on behalf of the Ministry. A successful or failed analysis does not change the problem lifecycle status; Ministry must explicitly perform review and approval/rejection through the lifecycle API.
+AI provides validation, categorization, extraction, and explanations. On submission, a completed advisory result may move a problem to AI_VALIDATED or AI_REJECTED. A failed or pending analysis leaves it at SUBMITTED and can be retried. AI never approves or rejects a problem on behalf of the Ministry. Validated problems are published to the submitter community feed, and only the configured support threshold makes them eligible for Ministry review. Ministry approval/rejection remains an explicit, attributable lifecycle action.
 
-When `OPENAI_API_KEY` is absent, non-production university matching uses deterministic token-hash embeddings and a grounded heuristic ranker so local development remains runnable; production uses the OpenAI providers and records failures as retryable runs when unavailable. Tests inject providers and do not require an external API key. The frontend never receives the API key.
+When `OPENAI_API_KEY` is absent, non-production problem intake and university matching use deterministic development providers so local demonstrations remain runnable; production uses the OpenAI providers and records failures as retryable runs when unavailable. Tests inject providers and do not require an external API key. The frontend never receives the API key.
 
 ## Authentication and RBAC (implemented foundation; account onboarding implemented)
 
@@ -87,7 +87,7 @@ The backend authenticates users with bcrypt password verification and JWT access
 
 ## Problem intake and lifecycle (implemented Phase 5 slice)
 
-Submitters can create multiple problems with structured location, priority, context, desired outcome, supporting information, and evidence references. Evidence stores a type plus either a provider-neutral `storageKey` or an `externalUrl`; binary upload handling is intentionally deferred until a storage provider abstraction is introduced.
+Submitters can create multiple problems with structured location, priority, context, desired outcome, supporting information, and evidence references. Evidence stores a type plus either a provider-neutral storageKey or an externalUrl; binary upload handling is intentionally deferred until a storage provider abstraction is introduced. Completed submission analysis gates community publication. The submitter community API exposes only AI_VALIDATED problems, records one support vote per submitter with a database uniqueness constraint, prevents self-support, and hands a problem to Ministry at the configured threshold. Ministry list/detail queries exclude pre-threshold intake states.
 
 Submitter list/detail/timeline queries are always scoped by the authenticated submitter profile. Ministry list/detail/timeline queries have the privileged all-problems view and support status, category, district, and block filters. Other roles cannot use these operations.
 
@@ -97,9 +97,9 @@ Creation and status changes are service/repository use cases. Creation writes th
 
 Prisma enums represent the persisted lifecycle vocabulary, and `backend/src/domain/lifecycle.ts` provides TypeScript status constants, types, allowed problem transitions, and actor-aware transition validation. Phase 7 adds AI-authorized matching transitions and Ministry recommendation approval. Phase 8 adds Ministry invitation dispatch plus university-authorized invitation acceptance/rejection, team formation, proposal draft, and proposal submission transitions. Phase 9 adds industry-authorized review, acceptance, and collaboration-confirmed transitions. Phase 10 adds a separate project state machine for operational delivery, append-only `ProjectStatusHistory`, transaction-safe university transitions, and project progress records.
 
-The lifecycle will support:
+The lifecycle supports:
 
-`SUBMITTED` -> AI validation -> Ministry review/decision -> university matching/recommendation -> Ministry university approval -> invitations -> one accepted university -> team -> proposal -> industry collaboration -> prototype -> field pilot -> implementation -> impact measurement -> completion.
+`SUBMITTED` -> AI validation -> community support -> threshold eligibility -> Ministry review/decision -> university matching/recommendation -> Ministry university approval -> invitations -> one accepted university -> team -> proposal -> industry collaboration -> prototype -> field pilot -> implementation -> impact measurement -> completion.
 
 Every important transition will append a status-history record containing old status, new status, actor, timestamp, and optional reason/metadata. The accepted-university operation will use a transaction and the `UniversityProblemAssignment_one_accepted_per_problem_idx` partial unique index so concurrent acceptances cannot produce multiple accepted universities. The constraint has been verified with a rolled-back transaction test.
 
@@ -129,9 +129,11 @@ Industry reads for interests, collaborations, and projects are filtered by the a
 
 `ProjectRepository` owns the transaction boundary for status changes and validates `backend/src/domain/projectLifecycle.ts`. It appends project status history and mirrors active delivery states into the problem lifecycle. Milestones use ordered records with status, due date, completion percentage, and deliverables. Updates can reference a milestone and include provider-neutral project documents. Impact measurements use one record per project/metric with beneficiary, location, outcome, evidence, and notes fields.
 
-## Notifications (implemented Phase 11)
+## Notifications (implemented Phase 11; optional email extension)
 
 `NotificationRepository` stores recipient-scoped notifications with typed event categories, explicit related entity type/ID, read timestamp, and creation timestamp. `notificationEvents.ts` is called by problem, AI, invitation, team, proposal, industry collaboration, and project repositories. Event inserts occur inside existing transactions where available, so a rolled-back lifecycle change cannot leave a notification behind. The API exposes list, unread count, mark-read, and mark-all-read operations; every query is constrained by the authenticated recipient ID. The frontend uses refresh plus one-minute polling and does not require WebSockets.
+
+`EmailNotificationService` is configured centrally from optional SMTP environment variables. It is invoked by the same notification fan-out after the in-app notification is persisted. Missing configuration, invalid recipient addresses, provider errors, and transport failures are handled safely, so email is best-effort and never breaks the primary workflow or dashboard notifications.
 
 ## Ministry analytics and control dashboard (implemented Phase 12; verified Phase 13)
 
@@ -150,6 +152,7 @@ The frontend now uses a shared visual vocabulary in `frontend/app/globals.css` a
 - Identity, authentication, refresh sessions, and RBAC (implemented)
 - Ministry organization account creation, registration applications, approval/rejection, and structured organization profiles (implemented)
 - Problem intake, submitter profiles, and initial problem lifecycle (implemented)
+- AI-gated community problem posts, one-per-user support votes, and Ministry threshold handoff (implemented)
 - AI validation, extraction, embeddings, grounded university ranking, and recommendation explanations (implemented)
 - Ministry review, recommendation approvals/removals/manual additions, invitation dispatch, and oversight (implemented through Phase 8)
 - University capability profiles, teams, proposals, and project progress (project delivery implemented; broader dashboard planned)
@@ -162,10 +165,10 @@ The frontend now uses a shared visual vocabulary in `frontend/app/globals.css` a
 | Area | Implemented through Phase 13 | Planned |
 | --- | --- | --- |
 | Repository/domain foundation | Root folders, documentation, ignore rules, TypeScript lifecycle module, problem repository/service/controller layering | Remaining business domain service implementations |
-| Frontend | Next.js/TypeScript/Tailwind scaffold, auth integration, shared UI primitives, responsive role-aware shell, submitter problem form/list/detail/timeline, Ministry AI/matching review screens, university assignment/team/proposal workspace, industry discovery/collaboration workspace, project workspace, notification indicator/list, and Ministry analytics dashboard | Ministry organization/application screens, richer upload UX, frontend test suite, visual regression coverage, and advanced reporting |
-| Backend | Express app/server, environment validation, security middleware, error/404 handling, response conventions, health route, repository/service/controller layering, authentication, registration/profile/problem/AI/matching/collaboration/project/notification APIs, Ministry analytics aggregation API, recipient isolation, tests, and Prisma/TypeScript tooling | Production deployment configuration and additional reporting endpoints |
-| Database | Prisma schema, migrations, constraints, onboarding/profile/problem/AI/matching/collaboration data, project status history, milestones, updates, documents, impact records, notification related-entity fields, proposal view events, pgvector indexes, analytics seed strategy/data, Docker Compose, and pgvector init script | Additional reporting/read models |
-| AI | OpenAI structured-output and embedding provider boundaries, dedicated prompts/schemas, Zod validation, deterministic development providers, persisted failures/retry, grounded evidence validation, and Ministry advisory view | Broader AI recommendations and operational model governance |
+| Frontend | Next.js/TypeScript/Tailwind scaffold, auth integration, shared UI primitives, responsive role-aware shell, submitter problem form/list/detail/timeline, community problem/support feed, Ministry AI/matching review screens, university assignment/team/proposal workspace, industry discovery/collaboration workspace, project workspace, notification indicator/list, and Ministry analytics dashboard | Ministry organization/application screens, richer upload UX, frontend test suite, visual regression coverage, and advanced reporting |
+| Backend | Express app/server, environment validation, security middleware, error/404 handling, response conventions, health route, repository/service/controller layering, authentication, registration/profile/problem/AI/matching/community/collaboration/project/notification APIs, optional best-effort SMTP email fan-out, Ministry analytics aggregation API, recipient isolation, tests, and Prisma/TypeScript tooling | Production deployment configuration, durable email queue/provider operations, and additional reporting endpoints |
+| Database | Prisma schema, migrations, constraints, onboarding/profile/problem/AI/matching/community-upvote/collaboration data, project status history, milestones, updates, documents, impact records, notification related-entity fields, proposal view events, pgvector indexes, analytics seed strategy/data, Docker Compose, and pgvector init script | Additional reporting/read models |
+| AI | OpenAI structured-output and embedding provider boundaries, dedicated prompts/schemas, Zod validation, automatic submission gate, deterministic development providers, persisted failures/retry, grounded evidence validation, and Ministry advisory view | Broader AI recommendations and operational model governance |
 | Auth/RBAC | JWT login/refresh/logout, bcrypt password verification, safe current-user endpoint, refresh-session revocation, role middleware, onboarding flags, and synthetic role seed accounts | Password reset, account administration, and feature-specific authorization policies |
 | Registration/profiles | Ministry account creation, self-registration applications, approval/rejection, duplicate guards, and university/industry structured profile maintenance | Notifications, documents, public discovery, and broader onboarding UX |
 | Lifecycle | Persisted enums, append-only problem/project status histories, centralized actor-aware transition maps, review/approval transactions, invitation/acceptance/rejection transitions, project-context creation, team/proposal transitions, project delivery transitions, notification event records, and human-controlled AI boundary | Richer audit reporting |

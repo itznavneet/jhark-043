@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ErrorAlert, PrimaryButton } from "../../../components/ui";
+import { PasswordField } from "../../../components/PasswordField";
 import { useAuth } from "../../../lib/auth";
 
 export default function AccountSetupPage() {
@@ -70,44 +71,32 @@ export default function AccountSetupPage() {
           password before entering the workspace.
         </p>
         {error ? <ErrorAlert message={error} /> : null}
-        <label>
-          <span className="text-sm font-semibold text-slate-700">
-            Temporary password *
-          </span>
-          <input
-            className="mt-2 w-full"
-            required
-            type="password"
-            value={currentPassword}
-            onChange={(event) => setCurrentPassword(event.target.value)}
-          />
-        </label>
-        <label>
-          <span className="text-sm font-semibold text-slate-700">
-            New password *
-          </span>
-          <input
-            className="mt-2 w-full"
-            minLength={12}
-            required
-            type="password"
-            value={newPassword}
-            onChange={(event) => setNewPassword(event.target.value)}
-          />
-        </label>
-        <label>
-          <span className="text-sm font-semibold text-slate-700">
-            Confirm new password *
-          </span>
-          <input
-            className="mt-2 w-full"
-            minLength={12}
-            required
-            type="password"
-            value={confirmPassword}
-            onChange={(event) => setConfirmPassword(event.target.value)}
-          />
-        </label>
+        <PasswordField
+          id="temporary-password"
+          label="Temporary password *"
+          value={currentPassword}
+          onChange={setCurrentPassword}
+          required
+          autoComplete="current-password"
+        />
+        <PasswordField
+          id="new-password"
+          label="New password *"
+          value={newPassword}
+          onChange={setNewPassword}
+          minLength={12}
+          required
+          autoComplete="new-password"
+        />
+        <PasswordField
+          id="confirm-new-password"
+          label="Confirm new password *"
+          value={confirmPassword}
+          onChange={setConfirmPassword}
+          minLength={12}
+          required
+          autoComplete="new-password"
+        />
         <PrimaryButton className="w-full" disabled={busy} type="submit">
           {busy ? "Updating..." : "Continue to workspace"}
         </PrimaryButton>

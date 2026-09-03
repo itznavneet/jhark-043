@@ -4,6 +4,14 @@ import {
   type NotificationClient,
 } from "../repositories/notification.repository.js";
 import type { NotificationListQuery } from "../types/notification.js";
+import type { AppEnvironment } from "../config/environment.js";
+import { EmailNotificationService } from "./emailNotification.service.js";
+
+const emailNotificationService = new EmailNotificationService();
+
+export function configureEmailNotifications(environment: AppEnvironment) {
+  emailNotificationService.configure(environment);
+}
 
 export interface NotificationServiceContract {
   list(userId: string, query: NotificationListQuery): Promise<unknown[]>;
@@ -44,7 +52,18 @@ export async function notifyUsers(
     metadata?: Record<string, unknown>;
   },
 ) {
-  await new NotificationRepository(client).createForUsers(recipientIds, input);
+  const repository = new NotificationRepository(client);
+  await repository.createForUsers(recipientIds, input);
+  if (emailNotificationService.enabled) {
+    const users = await repository.emailsForUsers(recipientIds);
+    void emailNotificationService.send(
+      users.map((user) => ({
+        recipientEmail: user.email,
+        title: input.title,
+        message: input.message,
+      })),
+    );
+  }
 }
 
 export async function notifyRole(

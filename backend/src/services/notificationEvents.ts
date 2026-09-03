@@ -21,14 +21,35 @@ export async function notifyProblemSubmitted(
   await notifyUsers(client, [submitterUserId], {
     type: NotificationType.LIFECYCLE_UPDATE,
     title: "Problem submitted",
-    message: "Your societal challenge was submitted for Ministry review.",
+    message: "Your societal challenge was submitted for AI validation.",
     relatedEntityType: "PROBLEM",
     relatedEntityId: problemId,
   });
+}
+
+export async function notifyProblemThresholdReached(
+  client: NotificationClient,
+  problemId: string,
+  upvoteCount: number,
+  threshold: number,
+) {
+  const problem = await client.problem.findUnique({
+    where: { id: problemId },
+    select: { title: true, submitter: { select: { userId: true } } },
+  });
+  if (!problem) return;
   await notifyRole(client, UserRole.MINISTRY_ADMIN, {
     type: NotificationType.LIFECYCLE_UPDATE,
-    title: "New problem submitted",
-    message: "A new societal challenge is ready for review.",
+    title: "Problem ready for Ministry review",
+    message: `${problem.title} reached the community support threshold (${upvoteCount}/${threshold}).`,
+    relatedEntityType: "PROBLEM",
+    relatedEntityId: problemId,
+  });
+  await notifyUsers(client, [problem.submitter.userId], {
+    type: NotificationType.LIFECYCLE_UPDATE,
+    title: "Problem reached support threshold",
+    message:
+      "Your validated problem has reached the community support threshold and is now with the Ministry for review.",
     relatedEntityType: "PROBLEM",
     relatedEntityId: problemId,
   });

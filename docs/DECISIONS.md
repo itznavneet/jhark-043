@@ -171,7 +171,7 @@
 ## ADR-029: Keep AI advisory and Ministry-controlled
 
 - **Status:** Accepted
-- **Decision:** AI analysis never changes a problem's lifecycle status and never approves or rejects a problem. Only authenticated Ministry actions can perform lifecycle approval/rejection transitions.
+- **Decision:** AI analysis never makes a Ministry approval/rejection decision. The later community-gated intake workflow permits a completed AI analysis to classify a submission as AI_VALIDATED or AI_REJECTED before publication; only authenticated Ministry actions can perform the final public-interest approval/rejection transitions.
 - **Reason:** AI provides evidence and recommendations, while accountable Ministry actors retain final authority over public-interest decisions.
 
 ## ADR-030: Store traceable embeddings for university knowledge and problems
@@ -227,3 +227,15 @@
 - **Status:** Accepted
 - **Decision:** Expose one Ministry-protected analytics read endpoint backed by a dedicated analytics service and repository. PostgreSQL performs the dashboard's counts, grouped distributions, rates, organization participation, project stages/delays/progress, and impact totals. A unique industry/proposal view record is created on proposal-detail access and aggregated with interest/collaboration events.
 - **Reason:** Ministry reporting must remain efficient as records grow and must not depend on loading complete tables into Node.js. A focused read contract keeps dashboard calculations separate from transactional business workflows, while a deduplicated detail-view record provides a truthful discovery signal.
+
+## ADR-039: Gate community publication with advisory AI and support threshold
+
+- **Status:** Accepted
+- **Decision:** A submitted problem is processed before publication. A completed advisory result may move it to AI_VALIDATED or AI_REJECTED; failures remain retryable at SUBMITTED. Only validated problems appear in the community feed. A submitter may support another user's problem once, and reaching UPVOTE_THRESHOLD changes eligibility to MINISTRY_REVIEW; it never approves the problem.
+- **Reason:** Community support should filter and prioritize genuine public-interest challenges while preserving the Ministry's final decision authority and preventing duplicate or self-support.
+
+## ADR-040: Keep email notification delivery optional and best-effort
+
+- **Status:** Accepted
+- **Decision:** In-app notifications remain the durable workflow record. A central email service optionally sends the same event through SMTP configured by environment variables. Missing configuration, invalid addresses, and delivery failures are handled without throwing into the originating workflow.
+- **Reason:** Local demonstrations use synthetic addresses and may have no mail provider. Dashboard notifications must remain reliable even when email is unavailable.

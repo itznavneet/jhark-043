@@ -25,9 +25,24 @@ export const problemEvidenceSchema = z
   );
 
 export const createProblemSchema = z.object({
-  title: z.string().trim().min(5).max(255),
-  description: z.string().trim().min(20).max(20_000),
-  category: z.string().trim().min(2).max(120),
+  title: z
+    .string()
+    .trim()
+    .min(1, "Problem title is required.")
+    .min(5, "Problem title must contain at least 5 characters.")
+    .max(255, "Problem title must be 255 characters or fewer."),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Problem description is required.")
+    .min(50, "Description must contain at least 50 characters.")
+    .max(20_000, "Problem description must be 20,000 characters or fewer."),
+  category: z
+    .string()
+    .trim()
+    .min(1, "Problem category is required.")
+    .min(2, "Problem category must contain at least 2 characters.")
+    .max(120, "Problem category must be 120 characters or fewer."),
   societalContext: optionalText(10_000),
   location: optionalText(255),
   district: optionalText(160),

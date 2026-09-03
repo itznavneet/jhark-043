@@ -3,7 +3,12 @@ import { z } from "zod";
 const optionalText = (max: number) =>
   z.string().trim().min(1).max(max).optional();
 
-const email = z.string().trim().toLowerCase().email().max(320);
+const email = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email("Please enter a valid email address.")
+  .max(320, "Email address must be 320 characters or fewer.");
 
 const facultySchema = z.object({
   name: z.string().trim().min(1).max(160),
@@ -136,7 +141,10 @@ export const publicRegistrationApplicationSchema = z.discriminatedUnion(
         .object({
           email,
           displayName: z.string().trim().min(2).max(160),
-          password: z.string().min(12).max(200),
+          password: z
+            .string()
+            .min(12, "Password must contain at least 12 characters.")
+            .max(200),
           confirmPassword: z.string().min(1).max(200),
         })
         .refine((input) => input.password === input.confirmPassword, {
@@ -151,7 +159,10 @@ export const publicRegistrationApplicationSchema = z.discriminatedUnion(
         .object({
           email,
           displayName: z.string().trim().min(2).max(160),
-          password: z.string().min(12).max(200),
+          password: z
+            .string()
+            .min(12, "Password must contain at least 12 characters.")
+            .max(200),
           confirmPassword: z.string().min(1).max(200),
         })
         .refine((input) => input.password === input.confirmPassword, {

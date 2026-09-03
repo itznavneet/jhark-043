@@ -32,7 +32,7 @@ In `backend/.env`, set `DATABASE_URL` to:
 DATABASE_URL="postgresql://sicip_dev:local_placeholder_only@localhost:55432/sicip_dev?schema=public"
 ```
 
-Set a local JWT secret of at least 32 characters. `OPENAI_API_KEY` may remain unset for deterministic matching and AI failure/retry demonstrations. Never commit either `.env` file.
+Set a local JWT secret of at least 32 characters. `OPENAI_API_KEY` may remain unset for the deterministic development AI gate and matching providers. Set `UPVOTE_THRESHOLD=3` (or another local demo value). SMTP variables may remain unset for dashboard-only notifications. Never commit either `.env` file.
 
 ## 3. Start PostgreSQL
 
@@ -121,21 +121,22 @@ The complete account table is available in [DEMO_ACCOUNTS.md](DEMO_ACCOUNTS.md).
 | Step | Browser/account         | Action                                                                    | Expected result                                                                            |
 | ---: | ----------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 |    1 | Submitter               | Sign in and open `/my-problems`                                           | Submitter workspace loads                                                                  |
-|    2 | Submitter               | Create a societal challenge                                               | Problem is created as `SUBMITTED`; Ministry receives a notification                        |
-|    3 | Ministry                | Open `/ministry/problems` and request AI analysis                         | With no key, a safe `FAILED` attempt is visible; with a key, structured analysis is stored |
-|    4 | Ministry                | Move the problem to `MINISTRY_REVIEW`, then `MINISTRY_APPROVED`           | Each transition is validated and written to status history                                 |
-|    5 | Ministry                | Run matching and review recommendations                                   | `AI_UNIVERSITY_MATCHED` then `UNIVERSITIES_RECOMMENDED`; evidence and scores are visible   |
-|    6 | Ministry                | Remove one recommendation, approve the final list, then click `Send invitations to approved universities` | Approved assignments become `INVITED`; universities receive notifications                  |
-|    7 | Two university sessions | Accept the same problem at nearly the same time                           | Exactly one acceptance succeeds; competing pending assignment is `CANCELLED`               |
-|    8 | Winning university      | Save a faculty mentor and research members                                | `ProjectTeam` and `TeamMember` rows exist; problem becomes `TEAM_FORMED`                   |
-|    9 | Winning university      | Save proposal draft, then submit it                                       | Proposal becomes `SUBMITTED`; industry can now discover it                                 |
-|   10 | Industry                | Open `/industry`, filter/view proposal, express interest                  | Industry view/interest is stored; duplicate interest is rejected                           |
-|   11 | Industry                | Accept the interest and optionally record funding                         | Collaboration is confirmed and a project is created; no payment occurs                     |
-|   12 | University              | Open `/projects`, create milestone, post update/document                  | Project delivery records and stakeholder notifications appear                              |
-|   13 | University              | Move project through prototype, pilot, implementation, impact, completion | Project and mirrored problem state histories are appended                                  |
-|   14 | Industry/Ministry       | Open `/projects`                                                          | Supported project progress is visible                                                      |
-|   15 | Submitter               | Open `/my-problems` and the problem detail                                | Simplified lifecycle and timeline are visible; private other-user data is not              |
-|   16 | Ministry                | Open `/ministry/analytics` and `/notifications`                           | Completion, impact, project, and notification metrics are reflected                        |
+|    2 | Submitter               | Create a societal challenge                                               | AI validation runs first; valid submissions become `AI_VALIDATED`, while rejected submissions stay out of community and Ministry views |
+|    3 | Submitter accounts      | Open `/my-problems`, review community posts, and support from another submitter account | Support count is visible; self-support and duplicate support are blocked |
+|    4 | Submitter accounts      | Reach `UPVOTE_THRESHOLD` support                                           | Problem moves to `MINISTRY_REVIEW` and Ministry receives the handoff notification; upvotes do not approve it |
+|    5 | Ministry                | Open `/ministry/problems` and choose `MINISTRY_APPROVED` or `MINISTRY_REJECTED` | Ministry makes the final decision and the transition is written to status history |
+|    6 | Ministry                | Run matching and review recommendations                                   | `AI_UNIVERSITY_MATCHED` then `UNIVERSITIES_RECOMMENDED`; evidence and scores are visible   |
+|    7 | Ministry                | Remove one recommendation, approve the final list, then click `Send invitations to approved universities` | Approved assignments become `INVITED`; universities receive notifications                  |
+|    8 | Two university sessions | Accept the same problem at nearly the same time                           | Exactly one acceptance succeeds; competing pending assignment is `CANCELLED`               |
+|    9 | Winning university      | Save a faculty mentor and research members                                | `ProjectTeam` and `TeamMember` rows exist; problem becomes `TEAM_FORMED`                   |
+|   10 | Winning university      | Save proposal draft, then submit it                                       | Proposal becomes `SUBMITTED`; industry can now discover it                                 |
+|   11 | Industry                | Open `/industry`, filter/view proposal, express interest                  | Industry view/interest is stored; duplicate interest is rejected                           |
+|   12 | Industry                | Accept the interest and optionally record funding                         | Collaboration is confirmed and a project is created; no payment occurs                     |
+|   13 | University              | Open `/projects`, create milestone, post update/document                  | Project delivery records and stakeholder notifications appear                              |
+|   14 | University              | Move project through prototype, pilot, implementation, impact, completion | Project and mirrored problem state histories are appended                                  |
+|   15 | Industry/Ministry       | Open `/projects`                                                          | Supported project progress is visible                                                      |
+|   16 | Submitter               | Open `/my-problems` and the problem detail                                | Simplified lifecycle and timeline are visible; private other-user data is not              |
+|   17 | Ministry                | Open `/ministry/analytics` and `/notifications`                           | Completion, impact, and notification metrics are reflected                                 |
 
 The deterministic automated equivalent is the Phase 13 `mvp.integration.test.ts` scenario and does not require a live OpenAI key.
 
@@ -175,4 +176,4 @@ npm.cmd run db:seed
 - **Backend refuses to start:** validate `DATABASE_URL` and ensure `JWT_SECRET` has at least 32 characters. `OPENAI_API_KEY` is optional for local fallback/failure-path demonstrations.
 - **Studio port is busy:** stop the existing Studio process or run `cd backend; npm.cmd run prisma:studio -- --port 5566 --browser none`.
 - **Frontend cannot reach the API:** confirm backend port `4000` and `FRONTEND_URL=http://localhost:3000`.
-- **No AI result appears:** without `OPENAI_API_KEY`, inspect the failed analysis record and use retry after adding a valid key; matching still has a deterministic development provider.
+- **No AI result appears:** inspect the problem's analysis status. The development provider is used when no key is configured; if a live provider fails, add a valid key and use Ministry retry. Failed analysis keeps the problem out of community and Ministry review until it completes.

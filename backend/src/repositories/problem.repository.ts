@@ -33,6 +33,12 @@ const problemDetailInclude = {
   },
 } as const;
 
+const ministryHiddenStatuses: ProblemStatus[] = [
+  ProblemStatus.SUBMITTED,
+  ProblemStatus.AI_VALIDATED,
+  ProblemStatus.AI_REJECTED,
+];
+
 export type ProblemListRecord = Prisma.ProblemGetPayload<{
   include: typeof problemListInclude;
 }>;
@@ -113,7 +119,19 @@ export class ProblemRepository {
         ...("ministry" in viewer
           ? {}
           : { submitter: { userId: viewer.submitterUserId } }),
-        ...(query.status ? { currentStatus: query.status } : {}),
+        ...("ministry" in viewer
+          ? {
+              currentStatus:
+                query.status &&
+                !new Set(ministryHiddenStatuses).has(query.status)
+                  ? query.status
+                  : {
+                      notIn: ministryHiddenStatuses,
+                    },
+            }
+          : query.status
+            ? { currentStatus: query.status }
+            : {}),
         ...(query.category
           ? {
               category: {
@@ -141,7 +159,7 @@ export class ProblemRepository {
       where: {
         id: problemId,
         ...("ministry" in viewer
-          ? {}
+          ? { currentStatus: { notIn: ministryHiddenStatuses } }
           : { submitter: { userId: viewer.submitterUserId } }),
       },
       include: problemDetailInclude,

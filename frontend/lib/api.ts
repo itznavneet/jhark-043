@@ -79,6 +79,25 @@ export interface Problem {
   updatedAt: string;
 }
 
+export interface CommunityProblem {
+  id: string;
+  title: string;
+  description: string;
+  category: { id: string; name: string } | null;
+  location: string | null;
+  district: string | null;
+  currentStatus: string;
+  upvoteCount: number;
+  hasUpvoted: boolean;
+  isOwnProblem: boolean;
+  submittedAt: string;
+}
+
+export interface CommunityProblemList {
+  problems: CommunityProblem[];
+  upvoteThreshold: number;
+}
+
 export interface TimelineEntry {
   id: string;
   previousStatus: string | null;
@@ -553,7 +572,10 @@ export interface MinistryAnalytics {
 interface ApiEnvelope<T> {
   success: boolean;
   data: T;
-  error?: { message: string };
+  error?: {
+    message: string;
+    details?: Array<{ field?: string; message?: string }>;
+  };
 }
 
 const apiBaseUrl =
@@ -588,8 +610,9 @@ export async function apiRequest<T>(
   });
   const envelope = (await response.json()) as ApiEnvelope<T>;
   if (!response.ok) {
+    const detail = envelope.error?.details?.[0]?.message;
     throw new ApiError(
-      envelope.error?.message ?? "Request failed",
+      detail ?? envelope.error?.message ?? "Request failed",
       response.status,
     );
   }
@@ -910,6 +933,27 @@ export async function getMinistryAnalytics(
   return apiRequest<MinistryAnalytics>(
     "/analytics/ministry",
     undefined,
+    accessToken,
+  );
+}
+
+export async function listCommunityProblems(
+  accessToken: string,
+): Promise<CommunityProblemList> {
+  return apiRequest<CommunityProblemList>(
+    "/community/problems",
+    undefined,
+    accessToken,
+  );
+}
+
+export async function upvoteCommunityProblem(
+  problemId: string,
+  accessToken: string,
+): Promise<CommunityProblem> {
+  return apiRequest<CommunityProblem>(
+    `/community/problems/${problemId}/upvote`,
+    { method: "POST" },
     accessToken,
   );
 }

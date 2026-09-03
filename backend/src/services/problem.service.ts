@@ -9,6 +9,7 @@ import type {
   ProblemTransitionInput,
 } from "../types/problem.js";
 import { AppError } from "../utils/appError.js";
+import type { ProblemAiServiceContract } from "./problemAi.service.js";
 
 export interface ProblemServiceContract {
   createProblem(userId: string, input: CreateProblemInput): Promise<unknown>;
@@ -26,6 +27,7 @@ export interface ProblemServiceContract {
 export class ProblemService implements ProblemServiceContract {
   constructor(
     private readonly repository: ProblemRepository = new ProblemRepository(),
+    private readonly aiService?: ProblemAiServiceContract,
   ) {}
 
   async createProblem(
@@ -33,6 +35,13 @@ export class ProblemService implements ProblemServiceContract {
     input: CreateProblemInput,
   ): Promise<unknown> {
     const problem = await this.repository.createProblem(userId, input);
+    if (this.aiService) {
+      await this.aiService.processSubmittedProblem(problem.id);
+      const updated = await this.repository.findProblemById(problem.id, {
+        submitterUserId: userId,
+      });
+      if (updated) return toProblemDetail(updated);
+    }
     return toProblemDetail(problem);
   }
 

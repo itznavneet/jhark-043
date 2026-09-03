@@ -44,8 +44,11 @@ function normalizeError(error: unknown): {
     return {
       statusCode: 400,
       code: "VALIDATION_ERROR",
-      message: "Request validation failed",
-      details: error.issues,
+      message: error.issues[0]?.message ?? "Please check the submitted fields",
+      details: error.issues.map((issue) => ({
+        field: issue.path.join(".") || "request",
+        message: issue.message,
+      })),
     };
   }
 

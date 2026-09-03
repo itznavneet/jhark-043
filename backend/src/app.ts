@@ -11,6 +11,7 @@ import {
   HealthService,
   type HealthServiceContract,
 } from "./services/health.service.js";
+import { configureEmailNotifications } from "./services/notification.service.js";
 
 export interface AppDependencies {
   environment?: AppEnvironment;
@@ -19,6 +20,7 @@ export interface AppDependencies {
 
 export function createApp(dependencies: AppDependencies = {}): Express {
   const environment = dependencies.environment ?? loadEnvironment();
+  configureEmailNotifications(environment);
   const healthService =
     dependencies.healthService ?? new HealthService(environment);
   const app = express();

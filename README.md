@@ -21,7 +21,7 @@ The system has separate Next.js and Express.js applications. The frontend consum
 - PostgreSQL in Docker for local development
 - pgvector for semantic university/proposal matching
 - Prisma as the ORM, with isolated raw SQL only if required for vector operations
-- OpenAI API for explainable validation, extraction, and recommendations
+- OpenAI API for explainable validation, extraction, and recommendations; deterministic development providers support local demos without a key
 - JWT authentication and backend-enforced role-based access control
 
 ## Authentication foundation
@@ -31,6 +31,7 @@ The backend exposes `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api
 ## Current and planned modules
 
 - Problem submission, provider-neutral evidence references, submitter privacy, and lifecycle history (implemented)
+- AI-gated validated community posts, one-support-per-submitter rules, configurable threshold handoff, and optional SMTP email notifications (implemented)
 - Authentication, RBAC, organization registration, and structured university/industry profiles (implemented)
 - AI problem validation and structured analysis
 - Ministry review transition (implemented) and broader decision workflows
@@ -52,7 +53,7 @@ The planned development environment requires:
 - Node.js and npm
 - Docker Desktop with Docker Compose
 - PostgreSQL-compatible local container support with pgvector (provided by `docker-compose.yml`)
-- OpenAI API access for future AI integration
+- OpenAI API access for live AI analysis (optional for local deterministic development)
 
 Create a local `.env` file with the PostgreSQL variables expected by Docker Compose before starting the database. Do not commit it.
 
@@ -86,6 +87,8 @@ For Phase 9 database-backed verification, set `$env:RUN_INDUSTRY_INTEGRATION='tr
 For Phase 10 project verification, set `$env:RUN_COLLABORATION_INTEGRATION='true'; $env:RUN_INDUSTRY_INTEGRATION='true'; $env:DATABASE_URL='<local-url>'` and run `npm.cmd test`. This covers project access isolation, delivery transitions, milestones, updates/documents, and impact records using synthetic PostgreSQL fixtures.
 
 For Phase 11 notification verification, set `$env:RUN_NOTIFICATION_INTEGRATION='true'` with the same local `DATABASE_URL` and run `npm.cmd test`. Notification APIs are `GET /api/notifications`, `GET /api/notifications/unread-count`, `PATCH /api/notifications/<notification-id>/read`, and `POST /api/notifications/read-all`.
+
+For community-gated problem intake, set `UPVOTE_THRESHOLD=3` in `backend/.env`. A completed development or OpenAI analysis publishes valid problems to the submitter community feed; supporters use `GET /api/community/problems` and `POST /api/community/problems/<problem-id>/upvote`. SMTP variables are optional; unset them for dashboard-only notifications.
 
 For Phase 12 Ministry analytics, run the migrations and seed, start the backend, sign in as the synthetic Ministry account, and open `http://localhost:3000/ministry/analytics`. The protected API is `GET /api/analytics/ministry`; it uses PostgreSQL aggregation and returns overview KPIs, problem trends, university/industry participation, project stages, and impact metrics. Industry proposal-detail access creates one deduplicated view event per industry/proposal pair for discovery analytics.
 

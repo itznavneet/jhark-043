@@ -48,7 +48,7 @@ const problem: ProblemForAnalysis = {
 };
 
 class InMemoryProblemAiRepository implements ProblemAiRepositoryContract {
-  readonly problemStatus = "SUBMITTED";
+  problemStatus = "SUBMITTED";
   readonly analyses: ProblemAnalysisRecord[] = [];
 
   findProblemForAnalysis(): Promise<ProblemForAnalysis> {
@@ -113,6 +113,14 @@ class InMemoryProblemAiRepository implements ProblemAiRepositoryContract {
 
   findAnalyses(): Promise<ProblemAnalysisRecord[]> {
     return Promise.resolve(this.analyses);
+  }
+
+  applyValidationStatus(
+    _problemId: string,
+    isSocietalProblem: boolean,
+  ): Promise<void> {
+    this.problemStatus = isSocietalProblem ? "AI_VALIDATED" : "AI_REJECTED";
+    return Promise.resolve();
   }
 
   private findRecord(id: string): ProblemAnalysisRecord {
@@ -192,6 +200,18 @@ describe("ProblemAiService", () => {
     expect(result.processingStatus).toBe(AiProcessingStatus.COMPLETED);
     expect(result.validationDecision).toBe(AiValidationDecision.INVALID);
     expect(result.isSocietalProblem).toBe(false);
+  });
+
+  it("supports the submission gate by applying AI validation status only in the submission path", async () => {
+    const repository = new InMemoryProblemAiRepository();
+    const service = new ProblemAiService(
+      repository,
+      providerReturning(validOutput),
+    );
+
+    await service.processSubmittedProblem(problem.id);
+
+    expect(repository.problemStatus).toBe("AI_VALIDATED");
   });
 
   it("records malformed output and provider failures as retryable failures", async () => {

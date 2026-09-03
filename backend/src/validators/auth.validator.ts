@@ -1,8 +1,13 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email().max(320),
-  password: z.string().min(1).max(128),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Please enter a valid email address.")
+    .max(320, "Email address must be 320 characters or fewer."),
+  password: z.string().min(1, "Password is required.").max(128),
   accountType: z.enum([
     "MINISTRY_ADMIN",
     "SUBMITTER",
@@ -13,8 +18,16 @@ export const loginSchema = z.object({
 
 export const submitterRegistrationSchema = z
   .object({
-    email: z.string().trim().toLowerCase().email().max(320),
-    password: z.string().min(12).max(200),
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email("Please enter a valid email address.")
+      .max(320, "Email address must be 320 characters or fewer."),
+    password: z
+      .string()
+      .min(12, "Password must contain at least 12 characters.")
+      .max(200),
     confirmPassword: z.string().min(1).max(200),
     displayName: z.string().trim().min(2).max(160),
     submitterType: z.enum([

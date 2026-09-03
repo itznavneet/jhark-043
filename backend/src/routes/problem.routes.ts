@@ -1,11 +1,15 @@
 import { Router } from "express";
 import { UserRole } from "@prisma/client";
 import type { AppEnvironment } from "../config/environment.js";
+import { DevelopmentProblemAnalysisProvider } from "../ai/developmentProblemAnalysis.provider.js";
+import { OpenAiProblemAnalysisProvider } from "../ai/openAiProblemAnalysis.provider.js";
 import { createProblemController } from "../controllers/problem.controller.js";
 import { createAuthenticate } from "../middleware/authenticate.js";
 import { requireRole } from "../middleware/requireRole.js";
 import { AuthRepository } from "../repositories/auth.repository.js";
 import { ProblemRepository } from "../repositories/problem.repository.js";
+import { ProblemAiRepository } from "../repositories/problem-ai.repository.js";
+import { ProblemAiService } from "../services/problemAi.service.js";
 import {
   ProblemService,
   type ProblemServiceContract,
@@ -33,7 +37,16 @@ export function createProblemRoutes(
   const tokenService =
     dependencies.tokenService ?? new TokenService(environment);
   const service =
-    dependencies.service ?? new ProblemService(new ProblemRepository());
+    dependencies.service ??
+    new ProblemService(
+      new ProblemRepository(),
+      new ProblemAiService(
+        new ProblemAiRepository(),
+        environment.openAiApiKey
+          ? new OpenAiProblemAnalysisProvider(environment)
+          : new DevelopmentProblemAnalysisProvider(),
+      ),
+    );
   const authenticate = createAuthenticate(tokenService, authRepository);
   const controller = createProblemController(service);
   const submitter = [authenticate, requireRole(UserRole.SUBMITTER)];

@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { submitOrganizationApplication } from "../lib/api";
 import { ErrorAlert, PrimaryButton } from "./ui";
+import { PasswordField } from "./PasswordField";
 
 type TargetType = "UNIVERSITY" | "INDUSTRY";
 
@@ -313,32 +314,24 @@ export function OrganizationApplicationForm({
         </div>
       )}
       <div className="grid gap-5 sm:grid-cols-2">
-        <label>
-          <span className="text-sm font-semibold text-slate-700">
-            Password *
-          </span>
-          <input
-            className="mt-2 w-full"
-            minLength={12}
-            required
-            type="password"
-            value={form.password}
-            onChange={(event) => update("password", event.target.value)}
-          />
-        </label>
-        <label>
-          <span className="text-sm font-semibold text-slate-700">
-            Confirm password *
-          </span>
-          <input
-            className="mt-2 w-full"
-            minLength={12}
-            required
-            type="password"
-            value={form.confirmPassword}
-            onChange={(event) => update("confirmPassword", event.target.value)}
-          />
-        </label>
+        <PasswordField
+          id="organization-password"
+          label="Password *"
+          value={form.password}
+          onChange={(value) => update("password", value)}
+          minLength={12}
+          required
+          autoComplete="new-password"
+        />
+        <PasswordField
+          id="organization-confirm-password"
+          label="Confirm password *"
+          value={form.confirmPassword}
+          onChange={(value) => update("confirmPassword", value)}
+          minLength={12}
+          required
+          autoComplete="new-password"
+        />
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
         <Link

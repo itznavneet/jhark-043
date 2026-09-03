@@ -496,3 +496,56 @@ This remains an MVP/SIH demonstration system, not production-ready.
 ### DEMO NOTE
 
 After Ministry selects and approves the final universities, click `Send invitations to approved universities`. The University dashboard then shows the invitation after refresh or re-login. Recommendations approved before this UI fix require this one dispatch action; they are not assigned automatically retroactively.
+
+## Community-gated submission, validation, and optional email (2026-09-03)
+
+This remains an MVP/SIH demonstration system, not production-ready.
+
+### COMPLETED
+
+- Added automatic AI processing to problem submission. Completed societal analysis moves a problem to `AI_VALIDATED`; clearly personal, irrelevant, or inadequate submissions move to `AI_REJECTED`; provider failures remain `SUBMITTED` and retryable.
+- Added a submitter-only community feed containing validated problems, configured `UPVOTE_THRESHOLD`, current support counts, self-support prevention, and database-enforced one-support-per-user behavior.
+- Added the threshold handoff to `MINISTRY_REVIEW`, status history, Ministry notification, and Ministry visibility only after eligibility.
+- Added specific backend validation details and frontend field messages for problem, authentication, and organization forms.
+- Added password show/hide controls and browser geolocation support for the problem form, with a manual-coordinate fallback when permission is unavailable.
+- Added one centralized optional SMTP email service. In-app notifications are persisted first; missing configuration, invalid addresses, and email transport failures do not break workflow operations.
+- Added the community upvote migration, repository/service/controller/routes, deterministic development AI provider, and focused integration coverage.
+
+### KNOWN LIMITATIONS
+
+- A user-provided `OPENAI_API_KEY` is still required for live OpenAI analysis. Without one, local development uses the deterministic non-production provider; live provider failures remain safe and retryable.
+- SMTP delivery is optional and best-effort. There is no durable email queue, provider failover, delivery tracking, or email verification.
+- Evidence remains provider-neutral metadata/URL input; binary upload and malware scanning are not implemented.
+- The community threshold defaults to 3 and is configured through `UPVOTE_THRESHOLD`; it is not yet a Ministry-managed setting.
+
+### KNOWN BUGS
+
+- No reproducible backend, database-integrity, authorization, AI-gating, upvote, notification-failure, or validation defect remains from the checks performed in this update.
+- Prisma reports its existing package.json configuration deprecation warning; this is a tooling warning, not a runtime failure.
+
+### VERIFIED COMMANDS
+
+| Command/check | Result |
+| --- | --- |
+| `backend: npm.cmd run format:check` | Passed |
+| `backend: npm.cmd run lint` | Passed |
+| `backend: npm.cmd run typecheck` | Passed |
+| `backend: npm.cmd test` | Passed: 14 files, 43 tests passed, 5 integration tests skipped without opt-in flags |
+| `backend: all integration flags + npm.cmd test` | Passed: 19 files, 48 tests passed |
+| `backend: npm.cmd run prisma:validate` | Passed |
+| `backend: npm.cmd exec -- prisma migrate status` | Passed: 15 migrations found, database up to date |
+| `frontend: npm.cmd run lint` | Passed |
+| `frontend: npm.cmd exec -- tsc --noEmit --incremental false` | Passed |
+| `frontend: Prettier check on all touched frontend files` | Passed |
+| `backend: npm.cmd run build` | Passed with the required filesystem permission; TypeScript production output generated |
+| `frontend: npm.cmd run build` | Passed: optimized Next.js build compiled and generated all 17 routes |
+| Live backend API on port 4100 with `OPENAI_API_KEY=none` and `UPVOTE_THRESHOLD=2` | Passed: valid submission, community visibility, self-support rejection, unique supports, threshold handoff, and Ministry visibility |
+| `git diff --check` | Passed |
+
+### DEMO FLOW
+
+1. Sign in as a submitter and create a substantive community challenge.
+2. Confirm automatic AI validation. Valid problems appear in the Community review section of `/my-problems`; rejected or failed problems do not.
+3. Sign in with other submitter accounts and support the validated post. The owner cannot support it and a submitter cannot support it twice.
+4. When the configured threshold is reached, sign in as Ministry. The problem is now available for Ministry approval or decline.
+5. After Ministry approval, continue the existing university matching, invitation, proposal, industry collaboration, project, impact, and analytics journey from `DEMO_RUNBOOK.md`.
