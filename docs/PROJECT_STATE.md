@@ -95,11 +95,12 @@
 - Deterministic Phase 13 end-to-end integration scenario covering submission through completion, impact, Ministry analytics, AI mocking, role isolation, malformed IDs, and concurrent university acceptance
 - Regression fix allowing Ministry to move an AI-validated problem into Ministry review through the centralized lifecycle state machine
 - Shared frontend visual system for typography, spacing, panels, buttons, forms, status badges, empty states, loading states, and error states
-- Responsive role-aware application shell with clear identity, role navigation, notification access, and sign-out controls
+- Responsive role-aware application shell with clear identity, role navigation, notification access, sign-out controls, and a shared outside-click-dismissed Profile panel
 - Polished submitter, Ministry, university, industry, project, problem-detail, and notification views using focused reusable components
 - Reusable lifecycle stepper that presents the challenge journey consistently and adapts intermediate statuses into a concise role-friendly view
 - Explicit Ministry labels distinguishing AI recommendations from Ministry decisions in the problem review workspace
 - Accessibility improvements for form labels, semantic navigation, status announcements, keyboard focus states, notification controls, and lifecycle landmarks
+- Submitter dashboard Create Challenge card with the existing submission form preserved inside a responsive, dismissible modal; the community feed remains a separate section
 
 ## In progress
 

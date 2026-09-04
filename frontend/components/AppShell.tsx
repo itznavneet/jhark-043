@@ -5,15 +5,8 @@ import { useAuth } from "../lib/auth";
 import { NotificationBell } from "./NotificationBell";
 import { ProfileCard } from "./ProfileCard";
 
-const roleLabels: Record<string, string> = {
-  MINISTRY_ADMIN: "Ministry administrator",
-  SUBMITTER: "Challenge submitter",
-  UNIVERSITY: "University partner",
-  INDUSTRY: "Industry partner",
-};
-
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { accessToken, user } = useAuth();
+  const { accessToken, signOut, user } = useAuth();
   const homePath =
     user?.role === "MINISTRY_ADMIN"
       ? "/ministry/problems"
@@ -91,24 +84,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </nav>
               <div className="flex items-center gap-2 sm:gap-3">
                 <NotificationBell accessToken={accessToken} />
-                <Link className="hidden border-l border-slate-200 pl-3 text-right transition hover:opacity-80 sm:block" href="/profile">
-                  <p className="max-w-36 truncate text-sm font-semibold text-ink">
-                    {user.displayName}
-                  </p>
-                  <p className="text-[11px] text-slate-500">
-                    {roleLabels[user.role] ?? user.role}
-                  </p>
-                </Link>
-                <Link className="grid h-9 w-9 place-items-center rounded-full bg-ink text-xs font-bold text-white sm:hidden" href="/profile" aria-label="Open profile">
-                  {user.displayName.slice(0, 2).toUpperCase()}
-                </Link>
+                <button
+                  className="border-l border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  type="button"
+                  onClick={async () => {
+                    await signOut();
+                    window.location.href = "/";
+                  }}
+                >
+                  Sign out
+                </button>
+                <ProfileCard user={user} />
               </div>
             </>
           ) : null}
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
-        {user ? <ProfileCard user={user} /> : null}
         {children}
       </main>
     </div>

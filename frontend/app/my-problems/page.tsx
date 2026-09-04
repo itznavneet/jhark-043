@@ -17,6 +17,7 @@ export default function MyProblemsPage() {
   const { accessToken, user, loading } = useAuth();
   const [problems, setProblems] = useState<Problem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
   const loadProblems = useCallback(async () => {
     if (!accessToken) return;
     try {
@@ -37,6 +38,15 @@ export default function MyProblemsPage() {
     void loadProblems();
   }, [loadProblems]);
 
+  useEffect(() => {
+    if (!createOpen) return;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setCreateOpen(false);
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [createOpen]);
+
   if (loading || !user || !accessToken)
     return <LoadingState label="Loading your workspace" />;
 
@@ -52,7 +62,7 @@ export default function MyProblemsPage() {
           </span>
         }
       />
-      <div className="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1fr)_400px]">
+      <div className="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1fr)_300px]">
         <section aria-labelledby="challenge-list-title">
           <div className="mb-4 flex items-center justify-between gap-4">
             <div>
@@ -83,13 +93,18 @@ export default function MyProblemsPage() {
             )}
           </div>
         </section>
-        <ProblemForm
-          accessToken={accessToken}
-          onCreated={(problem) => {
-            setProblems((current) => [problem, ...current]);
-            void loadProblems();
-          }}
-        />
+        <aside className="self-start">
+          <section className="panel overflow-hidden border-teal-100 bg-gradient-to-br from-white to-teal-50/70 p-6" aria-labelledby="create-challenge-title">
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent text-2xl font-black text-white" aria-hidden="true">+</div>
+            <p className="section-eyebrow mt-5">Start a community conversation</p>
+            <h2 className="section-title mt-1" id="create-challenge-title">Create Challenge</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">Share a real societal need. AI validation and community support help surface it for Ministry review.</p>
+            <button className="btn-primary mt-5 w-full" type="button" onClick={() => setCreateOpen(true)}>
+              Create Challenge
+            </button>
+          </section>
+          <p className="mt-3 px-1 text-xs leading-5 text-slate-500">Your submissions remain private until they pass validation and become eligible for community support.</p>
+        </aside>
       </div>
       <section className="mt-8 flex flex-col gap-4 rounded-2xl border border-teal-200 bg-teal-50 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -99,6 +114,37 @@ export default function MyProblemsPage() {
         </div>
         <a className="btn-primary shrink-0 text-center" href="/community">Open community problems</a>
       </section>
+
+      {createOpen ? (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/45 p-4 sm:p-8"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setCreateOpen(false);
+          }}
+        >
+          <div className="mx-auto flex min-h-full max-w-3xl items-start justify-center py-4 sm:py-8">
+            <div className="relative w-full max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white shadow-2xl shadow-slate-950/20 sm:max-h-[calc(100vh-4rem)]" role="dialog" aria-modal="true" aria-label="Create Challenge">
+              <button
+                className="absolute right-4 top-4 z-10 grid h-9 w-9 place-items-center rounded-full border border-slate-200 bg-white text-xl leading-none text-slate-500 shadow-sm transition hover:border-slate-300 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                type="button"
+                aria-label="Close Create Challenge form"
+                onClick={() => setCreateOpen(false)}
+              >
+                ×
+              </button>
+              <ProblemForm
+                accessToken={accessToken}
+                onCreated={(problem) => {
+                  setProblems((current) => [problem, ...current]);
+                  void loadProblems();
+                  setCreateOpen(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </AppShell>
   );
 }
