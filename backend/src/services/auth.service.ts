@@ -13,6 +13,7 @@ import type {
   PublicUser,
   RequestMetadata,
   SubmitterRegistrationInput,
+  UpdateProfileInput,
 } from "../types/auth.js";
 import { AppError } from "../utils/appError.js";
 import { TokenService, type RefreshTokenMaterial } from "./token.service.js";
@@ -42,6 +43,7 @@ export interface AuthServiceContract {
     currentPassword: string,
     newPassword: string,
   ): Promise<PublicUser>;
+  updateProfile(userId: string, input: UpdateProfileInput): Promise<PublicUser>;
 }
 
 export class AuthService implements AuthServiceContract {
@@ -205,6 +207,17 @@ export class AuthService implements AuthServiceContract {
       await bcrypt.hash(newPassword, 12),
     );
     await this.repository.revokeRefreshSessionsForUser(userId);
+    return toPublicUser(updated);
+  }
+
+  async updateProfile(
+    userId: string,
+    input: UpdateProfileInput,
+  ): Promise<PublicUser> {
+    const updated = await this.repository.updateDisplayName(
+      userId,
+      input.displayName.trim(),
+    );
     return toPublicUser(updated);
   }
 

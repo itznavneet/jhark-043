@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useAuth } from "../lib/auth";
 import { NotificationBell } from "./NotificationBell";
 import { ProfileCard } from "./ProfileCard";
@@ -14,8 +13,7 @@ const roleLabels: Record<string, string> = {
 };
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const { accessToken, user, signOut } = useAuth();
+  const { accessToken, user } = useAuth();
   const homePath =
     user?.role === "MINISTRY_ADMIN"
       ? "/ministry/problems"
@@ -93,23 +91,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </nav>
               <div className="flex items-center gap-2 sm:gap-3">
                 <NotificationBell accessToken={accessToken} />
-                <div className="hidden border-l border-slate-200 pl-3 text-right sm:block">
+                <Link className="hidden border-l border-slate-200 pl-3 text-right transition hover:opacity-80 sm:block" href="/profile">
                   <p className="max-w-36 truncate text-sm font-semibold text-ink">
                     {user.displayName}
                   </p>
                   <p className="text-[11px] text-slate-500">
                     {roleLabels[user.role] ?? user.role}
                   </p>
-                </div>
-                <button
-                  className="btn-secondary min-h-9 px-3 text-xs"
-                  onClick={async () => {
-                    await signOut();
-                    router.replace("/");
-                  }}
-                >
-                  Sign out
-                </button>
+                </Link>
+                <Link className="grid h-9 w-9 place-items-center rounded-full bg-ink text-xs font-bold text-white sm:hidden" href="/profile" aria-label="Open profile">
+                  {user.displayName.slice(0, 2).toUpperCase()}
+                </Link>
               </div>
             </>
           ) : null}

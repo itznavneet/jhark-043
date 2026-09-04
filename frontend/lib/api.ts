@@ -731,6 +731,18 @@ export async function logout(): Promise<void> {
   await apiRequest("/auth/logout", { method: "POST" });
 }
 
+export async function updateProfile(
+  displayName: string,
+  accessToken: string,
+): Promise<PublicUser> {
+  const result = await apiRequest<{ user: PublicUser }>(
+    "/auth/me",
+    { method: "PATCH", body: JSON.stringify({ displayName }) },
+    accessToken,
+  );
+  return result.user;
+}
+
 export async function changePassword(
   currentPassword: string,
   newPassword: string,
