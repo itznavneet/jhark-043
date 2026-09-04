@@ -10,13 +10,21 @@ import {
 import { TeamForm } from "./TeamForm";
 import { ProposalForm } from "./ProposalForm";
 import { LifecycleStepper } from "./LifecycleStepper";
-import { EmptyState, ErrorAlert, LoadingState, PageHeader, Panel, StatusBadge } from "./ui";
+import {
+  EmptyState,
+  ErrorAlert,
+  LoadingState,
+  PageHeader,
+  Panel,
+  StatusBadge,
+} from "./ui";
 
 export function UniversityDashboard({ accessToken }: { accessToken: string }) {
   const [assignments, setAssignments] = useState<UniversityAssignment[]>([]);
   const [selected, setSelected] = useState<UniversityAssignment | null>(null);
   const [team, setTeam] = useState<UniversityTeam | null>(null);
   const [proposal, setProposal] = useState<UniversityProposal | null>(null);
+  const [editingTeam, setEditingTeam] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +76,7 @@ export function UniversityDashboard({ accessToken }: { accessToken: string }) {
       ]);
       setSelected(assignment);
       setTeam(currentTeam);
+      setEditingTeam(false);
       setProposal(currentProposal);
     } catch (requestError) {
       setError(
@@ -121,12 +130,26 @@ export function UniversityDashboard({ accessToken }: { accessToken: string }) {
   if (loading) return <LoadingState label="Loading university workspace" />;
   return (
     <div>
-      <PageHeader eyebrow="University workspace" title="Assigned societal problems" description="Review Ministry invitations, form a research team, and submit a solution proposal." action={<span className="rounded-full bg-teal-50 px-3 py-2 text-sm font-bold text-accent">{assignments.length} assigned</span>} />
+      <PageHeader
+        eyebrow="University workspace"
+        title="Assigned societal problems"
+        description="Review Ministry invitations, form a research team, and submit a solution proposal."
+        action={
+          <span className="rounded-full bg-teal-50 px-3 py-2 text-sm font-bold text-accent">
+            {assignments.length} assigned
+          </span>
+        }
+      />
       {error ? (
-        <div className="mt-5"><ErrorAlert message={error} /></div>
+        <div className="mt-5">
+          <ErrorAlert message={error} />
+        </div>
       ) : null}
       <div className="mt-7 grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="panel h-fit space-y-3 p-4" aria-label="University assignments">
+        <aside
+          className="panel h-fit space-y-3 p-4"
+          aria-label="University assignments"
+        >
           {assignments.map((assignment) => (
             <button
               className={`w-full rounded-xl p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${selected?.id === assignment.id ? "bg-teal-50 ring-1 ring-accent" : "hover:bg-slate-50"}`}
@@ -142,11 +165,16 @@ export function UniversityDashboard({ accessToken }: { accessToken: string }) {
               <p className="mt-1 font-semibold text-ink">
                 {assignment.problem.title}
               </p>
-              <div className="mt-2"><StatusBadge status={assignment.status} /></div>
+              <div className="mt-2">
+                <StatusBadge status={assignment.status} />
+              </div>
             </button>
           ))}
           {!assignments.length ? (
-            <EmptyState title="No invitations available" description="Ministry-approved challenges assigned to your university will appear here." />
+            <EmptyState
+              title="No invitations available"
+              description="Ministry-approved challenges assigned to your university will appear here."
+            />
           ) : null}
         </aside>
         {selected ? (
@@ -206,13 +234,20 @@ export function UniversityDashboard({ accessToken }: { accessToken: string }) {
             </Panel>
             <LifecycleStepper currentStatus={selected.problem.currentStatus} />
             {selected.status === "ACCEPTED" || team ? (
-              <TeamForm
-                accessToken={accessToken}
-                assignmentId={selected.id}
-                team={team}
-                onSaved={setTeam}
-                onError={setError}
-              />
+              team && !editingTeam ? (
+                <TeamSummary team={team} onEdit={() => setEditingTeam(true)} />
+              ) : (
+                <TeamForm
+                  accessToken={accessToken}
+                  assignmentId={selected.id}
+                  team={team}
+                  onSaved={(saved) => {
+                    setTeam(saved);
+                    setEditingTeam(false);
+                  }}
+                  onError={setError}
+                />
+              )
             ) : null}
             {selected.status === "ACCEPTED" || proposal ? (
               <ProposalForm
@@ -231,6 +266,53 @@ export function UniversityDashboard({ accessToken }: { accessToken: string }) {
         )}
       </div>
     </div>
+  );
+}
+
+function TeamSummary({
+  team,
+  onEdit,
+}: {
+  team: UniversityTeam;
+  onEdit(): void;
+}) {
+  const mentor = team.members.find(
+    (member) => member.memberType === "FACULTY_MENTOR",
+  );
+  const members = team.members.filter(
+    (member) => member.memberType !== "FACULTY_MENTOR",
+  );
+  return (
+    <Panel>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="section-eyebrow">University team</p>
+          <h2 className="section-title">{team.name}</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Formed {new Date(team.formedAt).toLocaleString()}
+          </p>
+        </div>
+        <button className="btn-secondary" onClick={onEdit} type="button">
+          Edit team
+        </button>
+      </div>
+      {team.description ? (
+        <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+          {team.description}
+        </p>
+      ) : null}
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <Info label="Faculty mentor" value={mentor?.name ?? "Not specified"} />
+        <Info
+          label="Research members"
+          value={
+            members.length
+              ? members.map((member) => member.name).join(", ")
+              : "None added"
+          }
+        />
+      </div>
+    </Panel>
   );
 }
 

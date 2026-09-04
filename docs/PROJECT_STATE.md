@@ -549,3 +549,65 @@ This remains an MVP/SIH demonstration system, not production-ready.
 3. Sign in with other submitter accounts and support the validated post. The owner cannot support it and a submitter cannot support it twice.
 4. When the configured threshold is reached, sign in as Ministry. The problem is now available for Ministry approval or decline.
 5. After Ministry approval, continue the existing university matching, invitation, proposal, industry collaboration, project, impact, and analytics journey from `DEMO_RUNBOOK.md`.
+
+## Workflow and demonstration fixes (2026-09-03)
+
+### COMPLETED
+
+- Ministry registration application responses now include applicant name, email, role, and every submitted organization field for complete review before approval or rejection.
+- The Panchayati Raj registration card now initializes the submitter registration form with `PANCHAYATI_RAJ`; submitter type remains separate from the `SUBMITTER` authorization role.
+- Matching completion refreshes available universities and updates the Ministry review state immediately, so add/remove controls appear without a page reload.
+- University workspaces show a saved team summary with an edit action, submitted proposals remain read-only, and accepted proposal workspaces show supporting industry, status, confirmation time, support type, notes, and funding-record count.
+- Added community downvotes with one vote per user/problem, no vote changes, self-vote prevention, selected thumb state, owner-only downvote totals, and upvote-only Ministry threshold handoff.
+
+### KNOWN LIMITATIONS
+
+- The application detail view renders structured arrays and nested fields as readable text/JSON; it does not yet provide document previews or export.
+- Community votes are intentionally one-way for this MVP; a mistaken vote cannot be changed through the UI.
+
+### VERIFIED COMMANDS
+
+| Command/check | Result |
+| --- | --- |
+| `backend: node_modules\\.bin\\prisma.cmd validate` | Passed: updated schema valid. |
+| `backend: node_modules\\.bin\\prisma.cmd migrate deploy` | Passed: applied `20260903140000_problem_community_downvotes` to local PostgreSQL. |
+| `frontend: npm.cmd exec -- tsc --noEmit --incremental false` | Passed. |
+| `frontend: npm.cmd exec -- eslint .` | Passed. |
+| `backend: node_modules\\.bin\\prisma.cmd generate` | Passed after the temporary generated-client lock cleared; normal PostgreSQL Prisma client restored. |
+| `backend: npm.cmd run format:check`, `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd run build` | Passed. |
+| `backend: npm.cmd test` | Passed: 14 files, 43 tests passed, 5 integration tests skipped without opt-in flags. |
+| `backend: all integration flags + npm.cmd test` | Passed: 19 files, 48 tests passed, including the full MVP journey, community downvotes, and concurrent university acceptance. |
+| `frontend: npm.cmd run lint`, `npm.cmd exec -- tsc --noEmit --incremental false`, `npm.cmd run build` | Passed: Next.js production build generated all 17 routes. |
+| `git diff --check` | Passed. |
+
+### NEXT PHASE
+
+The next work should be driven by demonstration feedback: richer application review/export, vote moderation, and broader frontend automated/visual tests remain optional follow-up work.
+
+## Role-aware email notification refinement (2026-09-04)
+
+### COMPLETED
+
+- Added a centralized role-aware email allowlist while preserving all existing in-app notifications.
+- Submitters receive email for problem submission, Ministry approval/rejection, proposal submission, collaboration confirmation, and implementation/completion milestones.
+- Universities receive email for invitations, proposal submission, collaboration confirmation, and implementation/completion milestones.
+- Industries receive email for newly available proposals, collaboration confirmation, and implementation/completion milestones.
+- Ministry users receive email when a problem reaches Ministry review, collaboration confirmation, and implementation/completion milestones.
+- Added industry stakeholder fan-out for collaboration confirmation.
+- SMTP remains environment-configured, optional, asynchronous, and best-effort; invalid/fake addresses and transport failures are skipped safely.
+
+### KNOWN LIMITATIONS
+
+- Email delivery requires a valid SMTP provider configuration in the local `backend/.env`; no SMTP credentials are committed.
+- Delivery tracking, retries/queueing, unsubscribe preferences, and provider failover are not implemented.
+
+### VERIFIED COMMANDS
+
+| Command/check | Result |
+| --- | --- |
+| `backend: npm.cmd run format:check` | Passed. |
+| `backend: npm.cmd run typecheck` | Passed. |
+| `backend: npm.cmd run lint` | Passed. |
+| `backend: npm.cmd test` | Passed: 15 files, 45 tests passed, 5 integration tests skipped without opt-in flags. |
+| `backend: all integration flags + npm.cmd test` | Passed: 20 files, 50 tests passed, including the full MVP journey, community voting, email policy, and concurrent university acceptance. |
+| Secret scan excluding ignored local `.env` files | Passed: no committed API keys or private keys found. |

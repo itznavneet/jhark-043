@@ -7,7 +7,8 @@ const communityInclude = {
   category: { select: { id: true, name: true } },
   submitter: { select: { userId: true } },
   upvotes: { select: { id: true }, where: { userId: undefined } },
-  _count: { select: { upvotes: true } },
+  downvotes: { select: { id: true }, where: { userId: undefined } },
+  _count: { select: { upvotes: true, downvotes: true } },
 } as const;
 
 export type CommunityProblemRecord = Prisma.ProblemGetPayload<{
@@ -23,6 +24,7 @@ export class CommunityRepository {
       include: {
         ...communityInclude,
         upvotes: { where: { userId }, select: { id: true } },
+        downvotes: { where: { userId }, select: { id: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -33,8 +35,30 @@ export class CommunityRepository {
     userId: string,
     threshold: number,
   ): Promise<CommunityProblemRecord> {
+    return this.vote(problemId, userId, threshold, "UPVOTE");
+  }
+
+  async downvote(
+    problemId: string,
+    userId: string,
+    threshold: number,
+  ): Promise<CommunityProblemRecord> {
+    return this.vote(problemId, userId, threshold, "DOWNVOTE");
+  }
+
+  private async vote(
+    problemId: string,
+    userId: string,
+    threshold: number,
+    voteType: "UPVOTE" | "DOWNVOTE",
+  ): Promise<CommunityProblemRecord> {
     try {
       return await this.client.$transaction(async (transaction) => {
+        // Serialize all votes for one problem so the cross-table
+        // upvote/downvote invariant remains safe under concurrent requests.
+        await transaction.$executeRaw(
+          Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${problemId}, 0))`,
+        );
         const problem = await transaction.problem.findUnique({
           where: { id: problemId },
           select: {
@@ -59,7 +83,37 @@ export class CommunityRepository {
           );
         }
 
-        await transaction.problemUpvote.create({ data: { problemId, userId } });
+        const [existingUpvote, existingDownvote] = await Promise.all([
+          transaction.problemUpvote.findUnique({
+            where: { problemId_userId: { problemId, userId } },
+            select: { id: true },
+          }),
+          transaction.problemDownvote.findUnique({
+            where: { problemId_userId: { problemId, userId } },
+            select: { id: true },
+          }),
+        ]);
+        if (existingUpvote || existingDownvote) {
+          throw new AppError(
+            "You have already voted on this problem",
+            409,
+            existingUpvote && voteType === "UPVOTE"
+              ? "DUPLICATE_PROBLEM_UPVOTE"
+              : existingDownvote && voteType === "DOWNVOTE"
+                ? "DUPLICATE_PROBLEM_DOWNVOTE"
+                : "DUPLICATE_PROBLEM_VOTE",
+          );
+        }
+
+        if (voteType === "UPVOTE") {
+          await transaction.problemUpvote.create({
+            data: { problemId, userId },
+          });
+        } else {
+          await transaction.problemDownvote.create({
+            data: { problemId, userId },
+          });
+        }
         const count = await transaction.problemUpvote.count({
           where: { problemId },
         });
@@ -99,20 +153,37 @@ export class CommunityRepository {
           include: {
             ...communityInclude,
             upvotes: { where: { userId }, select: { id: true } },
+            downvotes: { where: { userId }, select: { id: true } },
           },
         });
       });
     } catch (error) {
       if (isUniqueConstraintError(error)) {
         throw new AppError(
-          "You have already supported this problem",
+          "You have already voted on this problem",
           409,
-          "DUPLICATE_PROBLEM_UPVOTE",
+          voteType === "UPVOTE"
+            ? "DUPLICATE_PROBLEM_UPVOTE"
+            : "DUPLICATE_PROBLEM_DOWNVOTE",
+        );
+      }
+      if (isSerializationConflict(error)) {
+        throw new AppError(
+          "Another vote was recorded at the same time. Please refresh and try again.",
+          409,
+          "VOTE_CONFLICT",
         );
       }
       throw error;
     }
   }
+}
+
+function isSerializationConflict(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2034"
+  );
 }
 
 function isUniqueConstraintError(error: unknown): boolean {

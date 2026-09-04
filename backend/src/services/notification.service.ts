@@ -1,4 +1,8 @@
-import type { Notification, NotificationType, UserRole } from "@prisma/client";
+import {
+  UserRole,
+  type Notification,
+  type NotificationType,
+} from "@prisma/client";
 import {
   NotificationRepository,
   type NotificationClient,
@@ -8,6 +12,13 @@ import type { AppEnvironment } from "../config/environment.js";
 import { EmailNotificationService } from "./emailNotification.service.js";
 
 const emailNotificationService = new EmailNotificationService();
+
+const workflowRoles: UserRole[] = [
+  UserRole.SUBMITTER,
+  UserRole.UNIVERSITY,
+  UserRole.INDUSTRY,
+  UserRole.MINISTRY_ADMIN,
+];
 
 export function configureEmailNotifications(environment: AppEnvironment) {
   emailNotificationService.configure(environment);
@@ -57,13 +68,57 @@ export async function notifyUsers(
   if (emailNotificationService.enabled) {
     const users = await repository.emailsForUsers(recipientIds);
     void emailNotificationService.send(
-      users.map((user) => ({
-        recipientEmail: user.email,
-        title: input.title,
-        message: input.message,
-      })),
+      users
+        .filter((user) => shouldSendWorkflowEmail(input, user.role))
+        .map((user) => ({
+          recipientEmail: user.email,
+          title: input.title,
+          message: input.message,
+        })),
     );
   }
+}
+
+/**
+ * Keep email delivery focused on major workflow milestones. All events still
+ * remain available as in-app notifications.
+ */
+export function shouldSendWorkflowEmail(
+  input: {
+    title: string;
+    metadata?: Record<string, unknown>;
+  },
+  role: UserRole,
+): boolean {
+  const status = input.metadata?.status;
+  if (input.title === "Problem submitted") {
+    return role === UserRole.SUBMITTER;
+  }
+  if (input.title === "Problem ready for Ministry review") {
+    return role === UserRole.MINISTRY_ADMIN;
+  }
+  if (input.title === "Proposal submitted") {
+    return role === UserRole.SUBMITTER || role === UserRole.UNIVERSITY;
+  }
+  if (input.title === "New proposal available") {
+    return role === UserRole.INDUSTRY;
+  }
+  if (input.title === "Collaboration confirmed") {
+    return workflowRoles.includes(role);
+  }
+  if (
+    (status === "IMPLEMENTATION" || status === "COMPLETED") &&
+    input.title.startsWith("Project")
+  ) {
+    return workflowRoles.includes(role);
+  }
+  if (
+    (status === "MINISTRY_APPROVED" || status === "MINISTRY_REJECTED") &&
+    input.title.startsWith("Problem ")
+  ) {
+    return role === UserRole.SUBMITTER;
+  }
+  return false;
 }
 
 export async function notifyRole(

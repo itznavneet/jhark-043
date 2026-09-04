@@ -7,14 +7,19 @@ import { registerSubmitter } from "../lib/api";
 import { ErrorAlert, PrimaryButton } from "./ui";
 import { PasswordField } from "./PasswordField";
 
-export function RegisterSubmitterForm() {
+export function RegisterSubmitterForm({
+  initialSubmitterType = "INDIVIDUAL_CITIZEN",
+}: {
+  initialSubmitterType?:
+    "INDIVIDUAL_CITIZEN" | "PANCHAYATI_RAJ" | "ORGANIZATION";
+}) {
   const router = useRouter();
   const [form, setForm] = useState({
     displayName: "",
     email: "",
     password: "",
     confirmPassword: "",
-    submitterType: "INDIVIDUAL_CITIZEN",
+    submitterType: initialSubmitterType,
     organizationName: "",
     description: "",
   });

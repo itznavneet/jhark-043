@@ -13,18 +13,19 @@ describe.skipIf(!runIntegrationTests)("community upvote integration", () => {
     let problemId: string | undefined;
     try {
       const users = await Promise.all(
-        ["owner", "supporter-one", "supporter-two"].map((label) =>
-          client.user.create({
-            data: {
-              email: `phase15-${label}-${suffix}@example.test`,
-              passwordHash: "integration-test-hash",
-              role: UserRole.SUBMITTER,
-              displayName: label,
-              submitterProfile: {
-                create: { type: "CITIZEN", displayName: label },
+        ["owner", "supporter-one", "supporter-two", "supporter-three"].map(
+          (label) =>
+            client.user.create({
+              data: {
+                email: `phase15-${label}-${suffix}@example.test`,
+                passwordHash: "integration-test-hash",
+                role: UserRole.SUBMITTER,
+                displayName: label,
+                submitterProfile: {
+                  create: { type: "CITIZEN", displayName: label },
+                },
               },
-            },
-          }),
+            }),
         ),
       );
       userIds.push(...users.map((user) => user.id));
@@ -67,13 +68,20 @@ describe.skipIf(!runIntegrationTests)("community upvote integration", () => {
       ).rejects.toMatchObject({
         code: "OWN_PROBLEM_UPVOTE_FORBIDDEN",
       });
-      await repository.upvote(problem.id, users[1]!.id, 2);
+      const downvoted = await repository.downvote(problem.id, users[1]!.id, 2);
+      expect(downvoted._count.downvotes).toBe(1);
       await expect(
         repository.upvote(problem.id, users[1]!.id, 2),
       ).rejects.toMatchObject({
+        code: "DUPLICATE_PROBLEM_VOTE",
+      });
+      await repository.upvote(problem.id, users[2]!.id, 2);
+      await expect(
+        repository.upvote(problem.id, users[2]!.id, 2),
+      ).rejects.toMatchObject({
         code: "DUPLICATE_PROBLEM_UPVOTE",
       });
-      const result = await repository.upvote(problem.id, users[2]!.id, 2);
+      const result = await repository.upvote(problem.id, users[3]!.id, 2);
       expect(result.currentStatus).toBe(ProblemStatus.MINISTRY_REVIEW);
       expect(result._count.upvotes).toBe(2);
       expect(

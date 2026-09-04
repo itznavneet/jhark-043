@@ -269,6 +269,7 @@ model User {
   projectStatusChanges   ProjectStatusHistory[]    @relation("ProjectStatusActor")
   notifications          Notification[]            @relation("NotificationRecipient")
   problemUpvotes         ProblemUpvote[]
+  problemDownvotes       ProblemDownvote[]
 
   @@index([role])
   @@index([universityId])
@@ -345,6 +346,7 @@ model Problem {
   teams                 ProjectTeam[]
   proposals             Proposal[]
   upvotes               ProblemUpvote[]
+  downvotes             ProblemDownvote[]
 
   @@index([submitterId, createdAt])
   @@index([currentStatus])
@@ -354,6 +356,19 @@ model Problem {
 }
 
 model ProblemUpvote {
+  id        String   @id @default(uuid()) @db.Uuid
+  problemId String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([problemId, userId])
+  @@index([problemId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model ProblemDownvote {
   id        String   @id @default(uuid()) @db.Uuid
   problemId String   @db.Uuid
   userId    String   @db.Uuid

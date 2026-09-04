@@ -239,3 +239,15 @@
 - **Status:** Accepted
 - **Decision:** In-app notifications remain the durable workflow record. A central email service optionally sends the same event through SMTP configured by environment variables. Missing configuration, invalid addresses, and delivery failures are handled without throwing into the originating workflow.
 - **Reason:** Local demonstrations use synthetic addresses and may have no mail provider. Dashboard notifications must remain reliable even when email is unavailable.
+
+## ADR-041: Model community votes as one-way up/down actions
+
+- **Status:** Accepted
+- **Decision:** Store upvotes and downvotes as separate problem/user records with unique constraints. A PostgreSQL transaction-scoped advisory lock per problem serializes the cross-table check and insert, so a submitter can vote only once and cannot change vote direction under concurrent requests. Only upvotes contribute to the configurable Ministry handoff threshold; downvote totals are returned only to the original problem submitter.
+- **Reason:** The feed needs visible thumbs-up/thumbs-down state without allowing vote manipulation or exposing negative totals as a popularity signal to other submitters, while preserving the existing upvote migration and API compatibility.
+
+## ADR-042: Restrict workflow email to major milestones
+
+- **Status:** Accepted
+- **Decision:** Keep every lifecycle event as an in-app notification, but apply a centralized role-aware email allowlist. Email is reserved for problem submission, Ministry review handoff, Ministry decisions, proposal submission/discovery, collaboration confirmation, and implementation/completion milestones. Each event is sent only to the relevant roles; SMTP remains optional and best-effort.
+- **Reason:** Email should provide meaningful action/status updates without overwhelming users with milestone-adjacent events such as individual votes, interest expressions, milestone edits, or routine document/impact updates.

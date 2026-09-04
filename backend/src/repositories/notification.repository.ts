@@ -106,7 +106,7 @@ export class NotificationRepository {
   emailsForUsers(userIds: string[]) {
     return this.client.user.findMany({
       where: { id: { in: [...new Set(userIds)] }, isActive: true },
-      select: { email: true },
+      select: { email: true, role: true },
     });
   }
 }

@@ -101,6 +101,12 @@ export interface OrganizationApplicationResponse {
   status: RegistrationStatus;
   applicationData: unknown;
   applicantUserId: string;
+  applicant: {
+    id: string;
+    email: string;
+    displayName: string;
+    role: string;
+  };
   reviewedAt: string | null;
   reviewReason: string | null;
   createdAt: string;

@@ -31,6 +31,12 @@ export interface RegistrationApplication {
   status: string;
   applicationData: Record<string, unknown>;
   applicantUserId: string;
+  applicant: {
+    id: string;
+    email: string;
+    displayName: string;
+    role: string;
+  };
   reviewedAt: string | null;
   reviewReason: string | null;
   createdAt: string;
@@ -88,7 +94,9 @@ export interface CommunityProblem {
   district: string | null;
   currentStatus: string;
   upvoteCount: number;
+  downvoteCount?: number;
   hasUpvoted: boolean;
+  userVote: "UPVOTE" | "DOWNVOTE" | null;
   isOwnProblem: boolean;
   submittedAt: string;
 }
@@ -235,6 +243,16 @@ export interface UniversityProposal {
   expectedSocialImpact: string | null;
   requestedSupport: string | null;
   requestedSupportTypes: IndustrySupportType[];
+  industryCollaborations: Array<{
+    id: string;
+    industry: { id: string; name: string };
+    supportType: IndustrySupportType;
+    status: string;
+    supportSummary: string | null;
+    confirmedAt: string | null;
+    createdAt: string;
+    fundingRecords: IndustryFunding[];
+  }>;
   status: "DRAFT" | "SUBMITTED";
   submittedAt: string | null;
   createdAt: string;
@@ -953,6 +971,18 @@ export async function upvoteCommunityProblem(
 ): Promise<CommunityProblem> {
   return apiRequest<CommunityProblem>(
     `/community/problems/${problemId}/upvote`,
+    { method: "POST" },
+    accessToken,
+  );
+}
+
+export async function voteCommunityProblem(
+  problemId: string,
+  vote: "UPVOTE" | "DOWNVOTE",
+  accessToken: string,
+): Promise<CommunityProblem> {
+  return apiRequest<CommunityProblem>(
+    `/community/problems/${problemId}/${vote === "UPVOTE" ? "upvote" : "downvote"}`,
     { method: "POST" },
     accessToken,
   );

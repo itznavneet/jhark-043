@@ -27,5 +27,11 @@ export function createCommunityRoutes(environment: AppEnvironment): Router {
     validateRequest({ params: problemIdParamsSchema }),
     controller.upvote,
   );
+  router.post(
+    "/problems/:problemId/downvote",
+    ...submitter,
+    validateRequest({ params: problemIdParamsSchema }),
+    controller.downvote,
+  );
   return router;
 }

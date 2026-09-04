@@ -76,9 +76,21 @@ export function UniversityMatchingPanel({
         result?.latestRun?.processingStatus === "FAILED"
           ? `/university-matching/problems/${problem.id}/match/retry`
           : `/university-matching/problems/${problem.id}/match`;
-      setResult(
-        await apiRequest<MatchingResult>(path, { method: "POST" }, accessToken),
+      const matching = await apiRequest<MatchingResult>(
+        path,
+        { method: "POST" },
+        accessToken,
       );
+      setResult(matching);
+      // Refresh the candidate pool immediately so Ministry review controls
+      // reflect the completed matching run without a page reload.
+      const universities = await apiRequest<AvailableUniversity[]>(
+        `/university-matching/problems/${problem.id}/available-universities`,
+        undefined,
+        accessToken,
+      );
+      setAvailable(universities);
+      onProblemStatusChange?.("UNIVERSITIES_RECOMMENDED");
     } catch (requestError) {
       setError(
         requestError instanceof Error

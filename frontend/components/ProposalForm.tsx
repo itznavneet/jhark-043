@@ -106,6 +106,47 @@ export function ProposalForm({
         <p className="mt-4 text-xs text-slate-500">
           Submitted proposals are now available for industry review.
         </p>
+        {proposal.industryCollaborations.length ? (
+          <div className="mt-5 rounded-xl border border-teal-200 bg-teal-50 p-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-teal-700">
+              Supporting industry
+            </p>
+            <div className="mt-3 space-y-3">
+              {proposal.industryCollaborations.map((collaboration) => (
+                <div
+                  className="rounded-lg bg-white/70 p-3"
+                  key={collaboration.id}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-semibold text-teal-950">
+                      {collaboration.industry.name}
+                    </p>
+                    <span className="text-xs font-semibold text-teal-800">
+                      {collaboration.status}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-teal-900">
+                    {collaboration.supportType.replaceAll("_", " ")}
+                    {collaboration.confirmedAt
+                      ? ` · confirmed ${new Date(collaboration.confirmedAt).toLocaleString()}`
+                      : ""}
+                  </p>
+                  {collaboration.supportSummary ? (
+                    <p className="mt-2 text-sm leading-5 text-teal-900">
+                      {collaboration.supportSummary}
+                    </p>
+                  ) : null}
+                  {collaboration.fundingRecords.length ? (
+                    <p className="mt-2 text-xs text-teal-800">
+                      Funding/support records:{" "}
+                      {collaboration.fundingRecords.length}
+                    </p>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </section>
     );
 

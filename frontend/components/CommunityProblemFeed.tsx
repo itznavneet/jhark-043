@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   listCommunityProblems,
-  upvoteCommunityProblem,
+  voteCommunityProblem,
   type CommunityProblem,
 } from "../lib/api";
 import { EmptyState, ErrorAlert, LoadingState, StatusBadge } from "./ui";
@@ -35,19 +35,25 @@ export function CommunityProblemFeed({ accessToken }: { accessToken: string }) {
     void load();
   }, [load]);
 
-  async function upvote(problemId: string) {
+  async function vote(problemId: string, voteType: "UPVOTE" | "DOWNVOTE") {
     setBusyId(problemId);
     setError(null);
     try {
-      const updated = await upvoteCommunityProblem(problemId, accessToken);
+      const updated = await voteCommunityProblem(
+        problemId,
+        voteType,
+        accessToken,
+      );
       setItems((current) =>
-        current.map((item) => (item.id === updated.id ? updated : item)),
+        updated.currentStatus === "AI_VALIDATED"
+          ? current.map((item) => (item.id === updated.id ? updated : item))
+          : current.filter((item) => item.id !== updated.id),
       );
     } catch (requestError) {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "Unable to support this problem",
+          : "Unable to record your vote",
       );
     } finally {
       setBusyId(null);
@@ -90,27 +96,54 @@ export function CommunityProblemFeed({ accessToken }: { accessToken: string }) {
               {item.description}
             </p>
             <p className="mt-4 text-sm font-semibold text-ink">
-              Community support: {item.upvoteCount} / {threshold}
+              👍 {item.upvoteCount} / {threshold}
+              {item.isOwnProblem && item.downvoteCount !== undefined
+                ? ` · 👎 ${item.downvoteCount}`
+                : ""}
             </p>
             <div className="mt-4 flex items-center justify-between gap-3">
               <span className="text-xs text-slate-500">
                 {item.location ?? item.district ?? "Location not specified"}
               </span>
-              <button
-                className="btn-secondary"
-                disabled={
-                  item.isOwnProblem || item.hasUpvoted || busyId === item.id
-                }
-                onClick={() => void upvote(item.id)}
-              >
-                {item.isOwnProblem
-                  ? "Your problem"
-                  : item.hasUpvoted
-                    ? "Supported"
-                    : busyId === item.id
-                      ? "Supporting..."
-                      : "Support problem"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  aria-label={
+                    item.userVote === "UPVOTE" ? "Upvoted" : "Upvote problem"
+                  }
+                  aria-pressed={item.userVote === "UPVOTE"}
+                  className={`rounded-lg border px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${item.userVote === "UPVOTE" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-300 text-slate-700"}`}
+                  disabled={
+                    item.isOwnProblem ||
+                    item.userVote !== null ||
+                    busyId === item.id
+                  }
+                  onClick={() => void vote(item.id, "UPVOTE")}
+                  type="button"
+                >
+                  👍
+                </button>
+                <button
+                  aria-label={
+                    item.userVote === "DOWNVOTE"
+                      ? "Downvoted"
+                      : "Downvote problem"
+                  }
+                  aria-pressed={item.userVote === "DOWNVOTE"}
+                  className={`rounded-lg border px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${item.userVote === "DOWNVOTE" ? "border-rose-500 bg-rose-50 text-rose-700" : "border-slate-300 text-slate-700"}`}
+                  disabled={
+                    item.isOwnProblem ||
+                    item.userVote !== null ||
+                    busyId === item.id
+                  }
+                  onClick={() => void vote(item.id, "DOWNVOTE")}
+                  type="button"
+                >
+                  👎
+                </button>
+                {item.isOwnProblem ? (
+                  <span className="text-xs text-slate-500">Your problem</span>
+                ) : null}
+              </div>
             </div>
           </article>
         ))}

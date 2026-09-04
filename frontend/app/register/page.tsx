@@ -4,9 +4,15 @@ import Link from "next/link";
 import { useState } from "react";
 import { RegisterSubmitterForm } from "../../components/RegisterSubmitterForm";
 
+type SubmitterType = "INDIVIDUAL_CITIZEN" | "PANCHAYATI_RAJ" | "ORGANIZATION";
+
 export default function RegisterPage() {
   const [mode, setMode] = useState<"choice" | "submitter">("choice");
-  if (mode === "submitter") return <RegisterSubmitterForm />;
+  const [submitterType, setSubmitterType] =
+    useState<SubmitterType>("INDIVIDUAL_CITIZEN");
+  if (mode === "submitter") {
+    return <RegisterSubmitterForm initialSubmitterType={submitterType} />;
+  }
   return (
     <main className="min-h-screen bg-canvas px-5 py-12 sm:px-8">
       <div className="mx-auto max-w-4xl">
@@ -20,17 +26,26 @@ export default function RegisterPage() {
           <ChoiceCard
             title="Citizen"
             description="Submit societal problems and track their lifecycle."
-            onClick={() => setMode("submitter")}
+            onClick={() => {
+              setSubmitterType("INDIVIDUAL_CITIZEN");
+              setMode("submitter");
+            }}
           />
           <ChoiceCard
             title="Panchayati Raj Institution"
             description="Submit community and local-government problems."
-            onClick={() => setMode("submitter")}
+            onClick={() => {
+              setSubmitterType("PANCHAYATI_RAJ");
+              setMode("submitter");
+            }}
           />
           <ChoiceCard
             title="Organization / NGO"
             description="Submit institutional and social innovation problems."
-            onClick={() => setMode("submitter")}
+            onClick={() => {
+              setSubmitterType("ORGANIZATION");
+              setMode("submitter");
+            }}
           />
         </div>
         <div className="mt-5 grid gap-5 md:grid-cols-2">

@@ -9,7 +9,9 @@ export interface CommunityProblemView {
   district: string | null;
   currentStatus: ProblemStatus;
   upvoteCount: number;
+  downvoteCount?: number;
   hasUpvoted: boolean;
+  userVote: "UPVOTE" | "DOWNVOTE" | null;
   isOwnProblem: boolean;
   submittedAt: string;
 }

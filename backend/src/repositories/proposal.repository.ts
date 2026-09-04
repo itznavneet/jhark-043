@@ -13,6 +13,28 @@ import { notifyProposalSubmitted } from "../services/notificationEvents.js";
 
 const proposalInclude = {
   team: { select: { id: true, name: true } },
+  collaborations: {
+    select: {
+      id: true,
+      supportType: true,
+      status: true,
+      supportSummary: true,
+      confirmedAt: true,
+      createdAt: true,
+      industry: { select: { id: true, name: true } },
+      fundingRecords: {
+        select: {
+          id: true,
+          fundingType: true,
+          status: true,
+          amount: true,
+          currencyCode: true,
+          conditionsNotes: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" as const },
+  },
 } as const;
 
 export type ProposalRecord = Prisma.ProposalGetPayload<{

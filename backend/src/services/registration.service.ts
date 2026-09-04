@@ -299,6 +299,7 @@ function toApplicationResponse(
     status: application.status,
     applicationData: application.applicationData,
     applicantUserId: application.applicantUserId,
+    applicant: application.applicant,
     reviewedAt: application.reviewedAt?.toISOString() ?? null,
     reviewReason: application.reviewReason,
     createdAt: application.createdAt.toISOString(),

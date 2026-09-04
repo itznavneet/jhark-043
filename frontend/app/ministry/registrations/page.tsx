@@ -112,7 +112,7 @@ export default function RegistrationApplicationsPage() {
                   {application.status}
                 </span>
               </div>
-              <ApplicationSummary data={application.applicationData} />
+              <ApplicationDetails application={application} />
               <div className="mt-5 flex flex-wrap gap-3">
                 <PrimaryButton
                   disabled={busyId === application.id}
@@ -140,20 +140,57 @@ export default function RegistrationApplicationsPage() {
   );
 }
 
-function ApplicationSummary({ data }: { data: Record<string, unknown> }) {
-  const values = ["city", "district", "state", "sector", "description"]
-    .map((key) => [key, data[key]] as const)
-    .filter(([, value]) => typeof value === "string" && value);
+function ApplicationDetails({
+  application,
+}: {
+  application: RegistrationApplication;
+}) {
+  const data = application.applicationData;
+  const values = Object.entries(data).filter(
+    ([, value]) => value !== null && value !== undefined && value !== "",
+  );
   return (
-    <div className="mt-5 grid gap-3 sm:grid-cols-2">
-      {values.map(([key, value]) => (
-        <div key={key}>
-          <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-            {key.replaceAll("_", " ")}
-          </p>
-          <p className="mt-1 text-sm text-slate-700">{String(value)}</p>
-        </div>
-      ))}
+    <details
+      className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4"
+      open
+    >
+      <summary className="cursor-pointer text-sm font-bold text-ink">
+        Complete application details
+      </summary>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <Detail
+          label="Applicant name"
+          value={application.applicant.displayName}
+        />
+        <Detail label="Applicant email" value={application.applicant.email} />
+        {values.map(([key, value]) => (
+          <Detail
+            key={key}
+            label={key.replaceAll("_", " ")}
+            value={formatValue(value)}
+          />
+        ))}
+      </div>
+    </details>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+      <p className="mt-1 whitespace-pre-wrap break-words text-sm text-slate-700">
+        {value}
+      </p>
     </div>
   );
+}
+
+function formatValue(value: unknown): string {
+  if (Array.isArray(value))
+    return value.map((item) => formatValue(item)).join(", ");
+  if (typeof value === "object" && value !== null) return JSON.stringify(value);
+  return String(value);
 }

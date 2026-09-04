@@ -212,26 +212,36 @@ export async function notifyCollaborationConfirmed(
   proposalId: string,
   projectId: string,
 ) {
-  const proposal = await client.proposal.findUnique({
-    where: { id: proposalId },
+  const project = await client.project.findUnique({
+    where: { id: projectId },
     select: {
-      universityId: true,
-      problem: { select: { submitter: { select: { userId: true } } } },
+      industryId: true,
+      proposal: {
+        select: {
+          universityId: true,
+          problem: { select: { submitter: { select: { userId: true } } } },
+        },
+      },
     },
   });
-  if (!proposal) return;
+  if (!project) return;
   const universityUsers = await notificationRepository(
     client,
-  ).userIdsForUniversity(proposal.universityId);
+  ).userIdsForUniversity(project.proposal.universityId);
   const ministryUsers = await notificationRepository(client).userIdsForRole(
     UserRole.MINISTRY_ADMIN,
+  );
+  const resolvedIndustryUsers = await projectIndustryUsers(
+    client,
+    project.industryId,
   );
   await notifyUsers(
     client,
     [
       ...universityUsers.map((user) => user.id),
-      proposal.problem.submitter.userId,
+      project.proposal.problem.submitter.userId,
       ...ministryUsers.map((user) => user.id),
+      ...resolvedIndustryUsers.map((user) => user.id),
     ],
     {
       type: NotificationType.COLLABORATION_UPDATE,
@@ -243,6 +253,15 @@ export async function notifyCollaborationConfirmed(
       metadata: { proposalId },
     },
   );
+}
+
+async function projectIndustryUsers(
+  client: NotificationClient,
+  industryId: string | null,
+) {
+  return industryId
+    ? notificationRepository(client).userIdsForIndustry(industryId)
+    : [];
 }
 
 export async function notifyProjectStakeholders(
