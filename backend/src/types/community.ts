@@ -5,8 +5,14 @@ export interface CommunityProblemView {
   title: string;
   description: string;
   category: { id: string; name: string } | null;
+  priority: string | null;
   location: string | null;
   district: string | null;
+  submitter: {
+    type: string;
+    displayName: string;
+    organizationName: string | null;
+  };
   currentStatus: ProblemStatus;
   upvoteCount: number;
   downvoteCount?: number;

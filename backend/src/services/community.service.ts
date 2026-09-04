@@ -51,8 +51,14 @@ function toView(
     title: record.title,
     description: record.description,
     category: record.category,
+    priority: record.priority,
     location: record.geography,
     district: record.district,
+    submitter: {
+      type: record.submitter.type,
+      displayName: record.submitter.displayName,
+      organizationName: record.submitter.organizationName,
+    },
     currentStatus: record.currentStatus,
     upvoteCount: record._count.upvotes,
     ...(record.submitter.userId === userId

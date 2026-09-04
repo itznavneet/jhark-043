@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../lib/auth";
 import { NotificationBell } from "./NotificationBell";
+import { ProfileCard } from "./ProfileCard";
 
 const roleLabels: Record<string, string> = {
   MINISTRY_ADMIN: "Ministry administrator",
@@ -34,6 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       : user.role === "SUBMITTER"
         ? [
             ["My challenges", "/my-problems"],
+            ["Community problems", "/community"],
             ["Projects", "/projects"],
           ]
         : user.role === "UNIVERSITY"
@@ -114,6 +116,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
+        {user ? <ProfileCard user={user} /> : null}
         {children}
       </main>
     </div>

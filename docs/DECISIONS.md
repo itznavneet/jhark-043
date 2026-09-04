@@ -240,11 +240,11 @@
 - **Decision:** In-app notifications remain the durable workflow record. A central email service optionally sends the same event through SMTP configured by environment variables. Missing configuration, invalid addresses, and delivery failures are handled without throwing into the originating workflow.
 - **Reason:** Local demonstrations use synthetic addresses and may have no mail provider. Dashboard notifications must remain reliable even when email is unavailable.
 
-## ADR-041: Model community votes as one-way up/down actions
+## ADR-041: Model community votes as one active up/down vote
 
 - **Status:** Accepted
-- **Decision:** Store upvotes and downvotes as separate problem/user records with unique constraints. A PostgreSQL transaction-scoped advisory lock per problem serializes the cross-table check and insert, so a submitter can vote only once and cannot change vote direction under concurrent requests. Only upvotes contribute to the configurable Ministry handoff threshold; downvote totals are returned only to the original problem submitter.
-- **Reason:** The feed needs visible thumbs-up/thumbs-down state without allowing vote manipulation or exposing negative totals as a popularity signal to other submitters, while preserving the existing upvote migration and API compatibility.
+- **Decision:** Store upvotes and downvotes as separate problem/user records with unique constraints. A PostgreSQL transaction-scoped advisory lock per problem serializes the cross-table check and mutation, so a submitter has at most one active vote, can change direction, or can remove the selected vote. Only upvotes contribute to the configurable Ministry handoff threshold; downvote totals are returned only to the original problem submitter.
+- **Reason:** Community voting should behave like a normal reversible support signal while preserving one active vote, preventing self-voting, hiding negative totals from other submitters, and keeping the existing threshold and API boundaries.
 
 ## ADR-042: Restrict workflow email to major milestones
 

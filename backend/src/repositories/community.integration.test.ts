@@ -6,7 +6,7 @@ import { CommunityRepository } from "./community.repository.js";
 const runIntegrationTests = process.env.RUN_COMMUNITY_INTEGRATION === "true";
 
 describe.skipIf(!runIntegrationTests)("community upvote integration", () => {
-  it("prevents self/duplicate support and sends a validated problem to Ministry at the threshold", async () => {
+  it("prevents self-voting, allows vote changes, and sends a validated problem to Ministry at the threshold", async () => {
     const client = new PrismaClient();
     const suffix = randomUUID().slice(0, 8);
     const userIds: string[] = [];
@@ -70,17 +70,13 @@ describe.skipIf(!runIntegrationTests)("community upvote integration", () => {
       });
       const downvoted = await repository.downvote(problem.id, users[1]!.id, 2);
       expect(downvoted._count.downvotes).toBe(1);
-      await expect(
-        repository.upvote(problem.id, users[1]!.id, 2),
-      ).rejects.toMatchObject({
-        code: "DUPLICATE_PROBLEM_VOTE",
-      });
-      await repository.upvote(problem.id, users[2]!.id, 2);
-      await expect(
-        repository.upvote(problem.id, users[2]!.id, 2),
-      ).rejects.toMatchObject({
-        code: "DUPLICATE_PROBLEM_UPVOTE",
-      });
+      const firstSupport = await repository.upvote(problem.id, users[2]!.id, 2);
+      expect(firstSupport._count.upvotes).toBe(1);
+      const removedVote = await repository.upvote(problem.id, users[2]!.id, 2);
+      expect(removedVote._count.upvotes).toBe(0);
+      const changedVote = await repository.upvote(problem.id, users[1]!.id, 2);
+      expect(changedVote._count.downvotes).toBe(0);
+      expect(changedVote._count.upvotes).toBe(1);
       const result = await repository.upvote(problem.id, users[3]!.id, 2);
       expect(result.currentStatus).toBe(ProblemStatus.MINISTRY_REVIEW);
       expect(result._count.upvotes).toBe(2);

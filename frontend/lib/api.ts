@@ -90,8 +90,14 @@ export interface CommunityProblem {
   title: string;
   description: string;
   category: { id: string; name: string } | null;
+  priority: string | null;
   location: string | null;
   district: string | null;
+  submitter: {
+    type: string;
+    displayName: string;
+    organizationName: string | null;
+  };
   currentStatus: string;
   upvoteCount: number;
   downvoteCount?: number;
@@ -245,7 +251,14 @@ export interface UniversityProposal {
   requestedSupportTypes: IndustrySupportType[];
   industryCollaborations: Array<{
     id: string;
-    industry: { id: string; name: string };
+    industry: {
+      id: string;
+      name: string;
+      website: string | null;
+      city: string | null;
+      state: string | null;
+      users: Array<{ displayName: string; email: string }>;
+    };
     supportType: IndustrySupportType;
     status: string;
     supportSummary: string | null;
@@ -253,7 +266,7 @@ export interface UniversityProposal {
     createdAt: string;
     fundingRecords: IndustryFunding[];
   }>;
-  status: "DRAFT" | "SUBMITTED";
+  status: "DRAFT" | "SUBMITTED" | "UNDER_INDUSTRY_REVIEW" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
   submittedAt: string | null;
   createdAt: string;
   updatedAt: string;

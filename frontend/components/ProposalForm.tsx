@@ -6,6 +6,7 @@ import {
   type IndustrySupportType,
   type UniversityProposal,
 } from "../lib/api";
+import { StatusBadge } from "./ui";
 
 const supportTypes: IndustrySupportType[] = [
   "FUNDING",
@@ -88,14 +89,12 @@ export function ProposalForm({
     }
   }
 
-  if (proposal?.status === "SUBMITTED")
+  if (proposal && proposal.status !== "DRAFT")
     return (
       <section className="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-xl font-bold text-ink">Submitted proposal</h2>
-          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-            SUBMITTED
-          </span>
+          <h2 className="text-xl font-bold text-ink">Proposal details</h2>
+          <StatusBadge status={proposal.status} />
         </div>
         <h3 className="mt-5 text-lg font-semibold text-ink">
           {proposal.title}
@@ -118,9 +117,9 @@ export function ProposalForm({
                   key={collaboration.id}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-semibold text-teal-950">
-                      {collaboration.industry.name}
-                    </p>
+                  <p className="font-semibold text-teal-950">
+                    {collaboration.industry.name}
+                  </p>
                     <span className="text-xs font-semibold text-teal-800">
                       {collaboration.status}
                     </span>
@@ -131,16 +130,52 @@ export function ProposalForm({
                       ? ` · confirmed ${new Date(collaboration.confirmedAt).toLocaleString()}`
                       : ""}
                   </p>
+                  <div className="mt-3 grid gap-2 text-xs text-teal-900 sm:grid-cols-2">
+                    {collaboration.industry.users[0] ? (
+                      <div>
+                        <span className="font-semibold">Contact: </span>
+                        {collaboration.industry.users[0].displayName}
+                      </div>
+                    ) : null}
+                    {collaboration.industry.users[0] ? (
+                      <div>
+                        <span className="font-semibold">Email: </span>
+                        <a className="underline" href={`mailto:${collaboration.industry.users[0].email}`}>
+                          {collaboration.industry.users[0].email}
+                        </a>
+                      </div>
+                    ) : null}
+                    {collaboration.industry.website ? (
+                      <div>
+                        <span className="font-semibold">Website: </span>
+                        <a className="underline" href={collaboration.industry.website} target="_blank" rel="noreferrer">
+                          {collaboration.industry.website}
+                        </a>
+                      </div>
+                    ) : null}
+                    {collaboration.industry.city || collaboration.industry.state ? (
+                      <div>
+                        <span className="font-semibold">Location: </span>
+                        {[collaboration.industry.city, collaboration.industry.state].filter(Boolean).join(", ")}
+                      </div>
+                    ) : null}
+                  </div>
                   {collaboration.supportSummary ? (
                     <p className="mt-2 text-sm leading-5 text-teal-900">
                       {collaboration.supportSummary}
                     </p>
                   ) : null}
                   {collaboration.fundingRecords.length ? (
-                    <p className="mt-2 text-xs text-teal-800">
-                      Funding/support records:{" "}
-                      {collaboration.fundingRecords.length}
-                    </p>
+                    <div className="mt-3 space-y-2 border-t border-teal-100 pt-3 text-xs text-teal-800">
+                      <p className="font-semibold">Funding and support records</p>
+                      {collaboration.fundingRecords.map((funding) => (
+                        <div className="rounded-lg bg-teal-50 p-2" key={funding.id}>
+                          <p>{funding.fundingType.replaceAll("_", " ")} · {funding.status.replaceAll("_", " ")}</p>
+                          {funding.amount !== null ? <p className="mt-1 font-semibold">{funding.currencyCode ?? "Amount"} {funding.amount.toLocaleString()}</p> : null}
+                          {funding.conditionsNotes ? <p className="mt-1">Conditions: {funding.conditionsNotes}</p> : null}
+                        </div>
+                      ))}
+                    </div>
                   ) : null}
                 </div>
               ))}

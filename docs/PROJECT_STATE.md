@@ -545,8 +545,8 @@ This remains an MVP/SIH demonstration system, not production-ready.
 ### DEMO FLOW
 
 1. Sign in as a submitter and create a substantive community challenge.
-2. Confirm automatic AI validation. Valid problems appear in the Community review section of `/my-problems`; rejected or failed problems do not.
-3. Sign in with other submitter accounts and support the validated post. The owner cannot support it and a submitter cannot support it twice.
+2. Confirm automatic AI validation. Valid problems appear in `/community`; rejected or failed problems do not.
+3. Sign in with other submitter accounts and support the validated post. The owner cannot support it; an active vote can be changed or removed.
 4. When the configured threshold is reached, sign in as Ministry. The problem is now available for Ministry approval or decline.
 5. After Ministry approval, continue the existing university matching, invitation, proposal, industry collaboration, project, impact, and analytics journey from `DEMO_RUNBOOK.md`.
 
@@ -558,12 +558,12 @@ This remains an MVP/SIH demonstration system, not production-ready.
 - The Panchayati Raj registration card now initializes the submitter registration form with `PANCHAYATI_RAJ`; submitter type remains separate from the `SUBMITTER` authorization role.
 - Matching completion refreshes available universities and updates the Ministry review state immediately, so add/remove controls appear without a page reload.
 - University workspaces show a saved team summary with an edit action, submitted proposals remain read-only, and accepted proposal workspaces show supporting industry, status, confirmation time, support type, notes, and funding-record count.
-- Added community downvotes with one vote per user/problem, no vote changes, self-vote prevention, selected thumb state, owner-only downvote totals, and upvote-only Ministry threshold handoff.
+- Added community downvotes with one active vote per user/problem, reversible vote direction/removal, self-vote prevention, selected thumb state, owner-only downvote totals, and upvote-only Ministry threshold handoff.
 
 ### KNOWN LIMITATIONS
 
 - The application detail view renders structured arrays and nested fields as readable text/JSON; it does not yet provide document previews or export.
-- Community votes are intentionally one-way for this MVP; a mistaken vote cannot be changed through the UI.
+- Community votes are reversible, but voting remains available only while a problem is in the AI_VALIDATED community state.
 
 ### VERIFIED COMMANDS
 
@@ -611,3 +611,34 @@ The next work should be driven by demonstration feedback: richer application rev
 | `backend: npm.cmd test` | Passed: 15 files, 45 tests passed, 5 integration tests skipped without opt-in flags. |
 | `backend: all integration flags + npm.cmd test` | Passed: 20 files, 50 tests passed, including the full MVP journey, community voting, email policy, and concurrent university acceptance. |
 | Secret scan excluding ignored local `.env` files | Passed: no committed API keys or private keys found. |
+
+## Community and collaboration UX refinement (2026-09-04)
+
+### COMPLETED
+
+- Added a dedicated submitter Community Problems route and navigation item; the long submission form no longer contains the community feed.
+- Added community post metadata for priority and submitter identity, plus category filtering and newest/most-supported sorting.
+- Community votes now support safe direction changes and removal of the selected vote while retaining one-active-vote, self-vote, private-downvote, and upvote-threshold rules.
+- Added a shared signed-in profile card showing full name, registered email, role, and stored organization/institution across all AppShell dashboards.
+- University proposal responses now include stored industry website, location, and linked active contact name/email for collaboration support cards. No phone or invented contact data is exposed because the schema does not store it.
+- The existing `Problem + University` uniqueness constraint remains the server/database guard against duplicate proposals; submitted proposals continue to render read-only while drafts remain editable.
+
+### KNOWN LIMITATIONS
+
+- Industry contact cards can show only fields stored today: organization website/location and the first active linked user name/email. Phone and a separate contact-person field are not present in the current schema.
+- Community category filtering and sorting are client-side for the current MVP feed; the backend still restricts the dataset to AI-validated problems.
+
+### VERIFIED COMMANDS
+
+| Command/check | Result |
+| --- | --- |
+| `backend: npm.cmd run typecheck` | Passed. |
+| `backend: npm.cmd run lint` | Passed. |
+| `backend: npm.cmd run format:check` | Passed after formatting the community repository. |
+| `backend: npm.cmd test` | Passed: 15 files, 45 tests passed, 5 integration tests skipped without opt-in flags. |
+| `backend: community integration test` | Passed: 16 files, 46 tests passed, including reversible vote behavior and threshold handoff. |
+| `backend: all integration flags + npm.cmd test` | Passed: 20 files, 50 tests passed, including E2E, concurrent university acceptance, community voting, notifications, and industry collaboration. |
+| `frontend: npm.cmd run lint` | Passed. |
+| `frontend: npm.cmd exec -- tsc --noEmit --incremental false` | Passed. |
+| `frontend: npm.cmd run build` | Passed: optimized build generated 18 routes, including `/community`. |
+| `git diff --check` | Passed. |

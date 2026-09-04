@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "../../components/AppShell";
 import { ProblemCard } from "../../components/ProblemCard";
 import { ProblemForm } from "../../components/ProblemForm";
-import { CommunityProblemFeed } from "../../components/CommunityProblemFeed";
 import {
   ErrorAlert,
   EmptyState,
@@ -91,7 +90,14 @@ export default function MyProblemsPage() {
           }
         />
       </div>
-      <CommunityProblemFeed accessToken={accessToken} />
+      <section className="mt-8 flex flex-col gap-4 rounded-2xl border border-teal-200 bg-teal-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="section-eyebrow">Community support</p>
+          <h2 className="mt-1 text-lg font-bold text-ink">Browse validated community problems</h2>
+          <p className="mt-1 text-sm text-slate-600">Support challenges from other submitters in a dedicated community feed.</p>
+        </div>
+        <a className="btn-primary shrink-0 text-center" href="/community">Open community problems</a>
+      </section>
     </AppShell>
   );
 }

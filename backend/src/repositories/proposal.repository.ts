@@ -21,7 +21,21 @@ const proposalInclude = {
       supportSummary: true,
       confirmedAt: true,
       createdAt: true,
-      industry: { select: { id: true, name: true } },
+      industry: {
+        select: {
+          id: true,
+          name: true,
+          website: true,
+          city: true,
+          state: true,
+          users: {
+            where: { isActive: true },
+            orderBy: { createdAt: "asc" },
+            take: 1,
+            select: { displayName: true, email: true },
+          },
+        },
+      },
       fundingRecords: {
         select: {
           id: true,

@@ -5,7 +5,14 @@ import { AppError } from "../utils/appError.js";
 
 const communityInclude = {
   category: { select: { id: true, name: true } },
-  submitter: { select: { userId: true } },
+  submitter: {
+    select: {
+      userId: true,
+      type: true,
+      displayName: true,
+      organizationName: true,
+    },
+  },
   upvotes: { select: { id: true }, where: { userId: undefined } },
   downvotes: { select: { id: true }, where: { userId: undefined } },
   _count: { select: { upvotes: true, downvotes: true } },
@@ -93,26 +100,42 @@ export class CommunityRepository {
             select: { id: true },
           }),
         ]);
-        if (existingUpvote || existingDownvote) {
-          throw new AppError(
-            "You have already voted on this problem",
-            409,
-            existingUpvote && voteType === "UPVOTE"
-              ? "DUPLICATE_PROBLEM_UPVOTE"
-              : existingDownvote && voteType === "DOWNVOTE"
-                ? "DUPLICATE_PROBLEM_DOWNVOTE"
-                : "DUPLICATE_PROBLEM_VOTE",
-          );
-        }
+        const currentVote = existingUpvote
+          ? "UPVOTE"
+          : existingDownvote
+            ? "DOWNVOTE"
+            : null;
 
-        if (voteType === "UPVOTE") {
-          await transaction.problemUpvote.create({
-            data: { problemId, userId },
-          });
+        if (currentVote === voteType) {
+          if (voteType === "UPVOTE") {
+            await transaction.problemUpvote.delete({
+              where: { problemId_userId: { problemId, userId } },
+            });
+          } else {
+            await transaction.problemDownvote.delete({
+              where: { problemId_userId: { problemId, userId } },
+            });
+          }
         } else {
-          await transaction.problemDownvote.create({
-            data: { problemId, userId },
-          });
+          if (existingUpvote) {
+            await transaction.problemUpvote.delete({
+              where: { problemId_userId: { problemId, userId } },
+            });
+          }
+          if (existingDownvote) {
+            await transaction.problemDownvote.delete({
+              where: { problemId_userId: { problemId, userId } },
+            });
+          }
+          if (voteType === "UPVOTE") {
+            await transaction.problemUpvote.create({
+              data: { problemId, userId },
+            });
+          } else {
+            await transaction.problemDownvote.create({
+              data: { problemId, userId },
+            });
+          }
         }
         const count = await transaction.problemUpvote.count({
           where: { problemId },
@@ -160,11 +183,9 @@ export class CommunityRepository {
     } catch (error) {
       if (isUniqueConstraintError(error)) {
         throw new AppError(
-          "You have already voted on this problem",
+          "Your vote changed while another request was being processed. Please refresh and try again.",
           409,
-          voteType === "UPVOTE"
-            ? "DUPLICATE_PROBLEM_UPVOTE"
-            : "DUPLICATE_PROBLEM_DOWNVOTE",
+          "VOTE_CONFLICT",
         );
       }
       if (isSerializationConflict(error)) {
