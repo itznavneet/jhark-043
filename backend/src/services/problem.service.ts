@@ -41,6 +41,11 @@ export class ProblemService implements ProblemServiceContract {
         submitterUserId: userId,
       });
       if (updated) return toProblemDetail(updated);
+      throw new AppError(
+        "Problem validation completed but the updated submission could not be reloaded",
+        500,
+        "PROBLEM_VALIDATION_REFRESH_FAILED",
+      );
     }
     return toProblemDetail(problem);
   }
@@ -115,6 +120,13 @@ function toProblemSummary(problem: ProblemListRecord) {
     block: problem.block,
     villageLocality: problem.villageLocality,
     priority: problem.priority,
+    aiAnalysis: problem.aiAnalyses?.[0]
+      ? {
+          validationDecision: problem.aiAnalyses[0].validationDecision,
+          reason: problem.aiAnalyses[0].reason,
+          category: problem.aiAnalyses[0].category,
+        }
+      : null,
     currentStatus: problem.currentStatus,
     evidenceCount: problem.evidence.length,
     submitter: problem.submitter,

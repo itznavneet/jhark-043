@@ -26,6 +26,7 @@ const analysisProblemSelect = {
   villageLocality: true,
   desiredOutcome: true,
   supportingInformation: true,
+  priority: true,
   category: { select: { name: true } },
   evidence: {
     select: { type: true, title: true, description: true },
@@ -60,6 +61,7 @@ export class ProblemAiRepository {
       villageLocality: problem.villageLocality,
       desiredOutcome: problem.desiredOutcome,
       supportingInformation: problem.supportingInformation,
+      priority: problem.priority,
       category: problem.category?.name ?? null,
       evidence: problem.evidence,
     };
@@ -111,8 +113,8 @@ export class ProblemAiRepository {
         category: { connect: { id: category.id } },
         processingStatus: AiProcessingStatus.COMPLETED,
         validationDecision: output.isSocietalProblem
-          ? AiValidationDecision.VALID
-          : AiValidationDecision.INVALID,
+          ? AiValidationDecision.VALIDATED
+          : AiValidationDecision.REJECTED_IRRELEVANT,
         isSocietalProblem: output.isSocietalProblem,
         reason: output.reason,
         summary: output.summary,
@@ -143,6 +145,7 @@ export class ProblemAiRepository {
   async applyValidationStatus(
     problemId: string,
     isSocietalProblem: boolean,
+    reason?: string | null,
   ): Promise<void> {
     const nextStatus = isSocietalProblem
       ? ProblemStatus.AI_VALIDATED
@@ -160,13 +163,30 @@ export class ProblemAiRepository {
           problemId,
           oldStatus: ProblemStatus.SUBMITTED,
           newStatus: nextStatus,
-          reason: isSocietalProblem
-            ? "AI validated the submission for community support"
-            : "AI rejected the submission as outside the societal innovation scope",
+          reason:
+            reason ??
+            (isSocietalProblem
+              ? "AI validated the submission for community support"
+              : "AI rejected the submission as outside the societal innovation scope"),
           metadata: { source: "ai_validation" },
         },
       });
       await notifyProblemLifecycle(transaction, problemId, nextStatus);
+    });
+  }
+
+  async markDuplicateRejected(
+    analysisId: string,
+    existingProblem: { title: string; similarity: number },
+  ): Promise<ProblemAnalysisRecord> {
+    return this.client.problemAIAnalysis.update({
+      where: { id: analysisId },
+      data: {
+        validationDecision: AiValidationDecision.REJECTED_DUPLICATE,
+        isSocietalProblem: false,
+        reason: `This submission substantially matches the existing problem “${existingProblem.title}” (similarity ${existingProblem.similarity.toFixed(2)}). Please review the existing challenge before submitting another post.`,
+      },
+      include: analysisInclude,
     });
   }
 

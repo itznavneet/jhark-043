@@ -71,6 +71,11 @@ export interface Problem {
   societalContext?: string | null;
   desiredOutcome?: string | null;
   supportingInformation?: string | null;
+  aiAnalysis?: {
+    validationDecision: "VALID" | "INVALID" | "NEEDS_REVIEW" | "VALIDATED" | "REJECTED_IRRELEVANT" | "REJECTED_DUPLICATE" | null;
+    reason: string | null;
+    category: { id: string; name: string } | null;
+  } | null;
   currentStatus: string;
   evidenceCount: number;
   evidence?: ProblemEvidence[];
@@ -125,7 +130,7 @@ export interface ProblemAnalysis {
   id: string;
   problemId: string;
   processingStatus: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
-  validationDecision: "VALID" | "INVALID" | "NEEDS_REVIEW" | null;
+  validationDecision: "VALID" | "INVALID" | "NEEDS_REVIEW" | "VALIDATED" | "REJECTED_IRRELEVANT" | "REJECTED_DUPLICATE" | null;
   isSocietalProblem: boolean | null;
   reason: string | null;
   category: { id: string; name: string } | null;

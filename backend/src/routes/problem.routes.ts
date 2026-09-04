@@ -10,6 +10,10 @@ import { AuthRepository } from "../repositories/auth.repository.js";
 import { ProblemRepository } from "../repositories/problem.repository.js";
 import { ProblemAiRepository } from "../repositories/problem-ai.repository.js";
 import { ProblemAiService } from "../services/problemAi.service.js";
+import { DevelopmentEmbeddingProvider } from "../ai/developmentEmbedding.provider.js";
+import { OpenAiEmbeddingProvider } from "../ai/openAiEmbedding.provider.js";
+import { UniversityMatchingRepository } from "../repositories/university-matching.repository.js";
+import { SemanticProblemDuplicateService } from "../services/problemDuplicate.service.js";
 import {
   ProblemService,
   type ProblemServiceContract,
@@ -45,6 +49,12 @@ export function createProblemRoutes(
         environment.openAiApiKey
           ? new OpenAiProblemAnalysisProvider(environment)
           : new DevelopmentProblemAnalysisProvider(),
+        new SemanticProblemDuplicateService(
+          new UniversityMatchingRepository(),
+          environment.openAiApiKey
+            ? new OpenAiEmbeddingProvider(environment)
+            : new DevelopmentEmbeddingProvider(),
+        ),
       ),
     );
   const authenticate = createAuthenticate(tokenService, authRepository);

@@ -43,6 +43,7 @@ const problem: ProblemForAnalysis = {
   villageLocality: "Example village",
   desiredOutcome: "Safe and reliable drinking water.",
   supportingInformation: null,
+  priority: null,
   category: null,
   evidence: [],
 };
@@ -81,8 +82,8 @@ class InMemoryProblemAiRepository implements ProblemAiRepositoryContract {
     Object.assign(record, {
       processingStatus: AiProcessingStatus.COMPLETED,
       validationDecision: output.isSocietalProblem
-        ? AiValidationDecision.VALID
-        : AiValidationDecision.INVALID,
+        ? AiValidationDecision.VALIDATED
+        : AiValidationDecision.REJECTED_IRRELEVANT,
       isSocietalProblem: output.isSocietalProblem,
       reason: output.reason,
       category: { id: "category-1", name: output.category },
@@ -177,7 +178,7 @@ describe("ProblemAiService", () => {
     const result = await service.triggerAnalysis(problem.id);
 
     expect(result.processingStatus).toBe(AiProcessingStatus.COMPLETED);
-    expect(result.validationDecision).toBe(AiValidationDecision.VALID);
+    expect(result.validationDecision).toBe(AiValidationDecision.VALIDATED);
     expect(result.category?.name).toBe("Water and sanitation");
     expect(result.requiredExpertise).toContain("water engineering");
     expect(repository.problemStatus).toBe("SUBMITTED");
@@ -198,7 +199,9 @@ describe("ProblemAiService", () => {
     const result = await service.triggerAnalysis(problem.id);
 
     expect(result.processingStatus).toBe(AiProcessingStatus.COMPLETED);
-    expect(result.validationDecision).toBe(AiValidationDecision.INVALID);
+    expect(result.validationDecision).toBe(
+      AiValidationDecision.REJECTED_IRRELEVANT,
+    );
     expect(result.isSocietalProblem).toBe(false);
   });
 

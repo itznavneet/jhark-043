@@ -13,6 +13,17 @@ export function ProblemCard({ problem }: { problem: Problem }) {
         <StatusBadge status={problem.currentStatus} />
       </div>
       <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{problem.description}</p>
+      {problem.currentStatus === "AI_REJECTED" && problem.aiAnalysis ? (
+        <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+          <p className="font-bold">
+            AI Rejected — {problem.aiAnalysis.validationDecision === "REJECTED_DUPLICATE" ? "Duplicate Problem" : "Irrelevant / Personal Problem"}
+          </p>
+          {problem.aiAnalysis.reason ? <p className="mt-1 leading-5">{problem.aiAnalysis.reason}</p> : null}
+        </div>
+      ) : null}
+      {problem.currentStatus === "AI_VALIDATED" ? (
+        <p className="mt-4 text-sm font-semibold text-emerald-700">AI Validated · Posted to community</p>
+      ) : null}
       <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
         <span>{problem.district || problem.location || "Location not specified"}</span>
         <span>Submitted {new Date(problem.createdAt).toLocaleDateString()}</span>

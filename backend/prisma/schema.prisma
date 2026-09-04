@@ -122,6 +122,9 @@ enum AiValidationDecision {
   VALID
   INVALID
   NEEDS_REVIEW
+  VALIDATED
+  REJECTED_IRRELEVANT
+  REJECTED_DUPLICATE
 }
 
 enum AiProcessingStatus {

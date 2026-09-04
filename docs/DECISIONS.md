@@ -251,3 +251,9 @@
 - **Status:** Accepted
 - **Decision:** Keep every lifecycle event as an in-app notification, but apply a centralized role-aware email allowlist. Email is reserved for problem submission, Ministry review handoff, Ministry decisions, proposal submission/discovery, collaboration confirmation, and implementation/completion milestones. Each event is sent only to the relevant roles; SMTP remains optional and best-effort.
 - **Reason:** Email should provide meaningful action/status updates without overwhelming users with milestone-adjacent events such as individual votes, interest expressions, milestone edits, or routine document/impact updates.
+
+## ADR-043: Gate publication with complete-submission AI and semantic duplicate decisions
+
+- **Status:** Accepted
+- **Decision:** Submission processing evaluates title, description, category, geography, context, desired outcome, supporting information, and evidence metadata. A completed analysis persists explicit `VALIDATED`, `REJECTED_IRRELEVANT`, or `REJECTED_DUPLICATE` decision codes. Validated submissions are embedded and compared with existing problem embeddings before publication; a detected duplicate is rejected with the existing problem title and similarity in the persisted reason. Provider or duplicate-detection failures remain retryable and leave the problem at `SUBMITTED`.
+- **Reason:** A legitimate-looking title must not bypass validation, and semantically equivalent challenges should not create repeated community posts. AI remains advisory while publication is gated by persisted analysis state.

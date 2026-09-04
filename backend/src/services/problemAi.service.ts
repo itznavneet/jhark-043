@@ -15,6 +15,7 @@ import type {
   ProblemAnalysisView,
 } from "../types/ai.js";
 import { AppError } from "../utils/appError.js";
+import type { ProblemDuplicateDetector } from "./problemDuplicate.service.js";
 
 export interface ProblemAiServiceContract {
   triggerAnalysis(problemId: string): Promise<ProblemAnalysisView>;
@@ -27,6 +28,7 @@ export class ProblemAiService implements ProblemAiServiceContract {
   constructor(
     private readonly repository: ProblemAiRepositoryContract = new ProblemAiRepository(),
     private readonly provider: ProblemAnalysisProvider,
+    private readonly duplicateDetector?: ProblemDuplicateDetector,
   ) {}
 
   async triggerAnalysis(problemId: string): Promise<ProblemAnalysisView> {
@@ -36,7 +38,10 @@ export class ProblemAiService implements ProblemAiServiceContract {
   async processSubmittedProblem(
     problemId: string,
   ): Promise<ProblemAnalysisView> {
-    const analysis = await this.runAnalysis(problemId);
+    const analysis = await this.applyDuplicateGate(
+      problemId,
+      await this.runAnalysis(problemId),
+    );
     await this.applySubmissionGate(problemId, analysis);
     return analysis;
   }
@@ -60,9 +65,46 @@ export class ProblemAiService implements ProblemAiServiceContract {
         "AI_RETRY_NOT_AVAILABLE",
       );
     }
-    const analysis = await this.runAnalysis(problemId);
+    const analysis = await this.applyDuplicateGate(
+      problemId,
+      await this.runAnalysis(problemId),
+    );
     await this.applySubmissionGate(problemId, analysis);
     return analysis;
+  }
+
+  private async applyDuplicateGate(
+    problemId: string,
+    analysis: ProblemAnalysisView,
+  ): Promise<ProblemAnalysisView> {
+    if (
+      analysis.processingStatus !== "COMPLETED" ||
+      analysis.isSocietalProblem !== true ||
+      !this.duplicateDetector ||
+      !this.repository.markDuplicateRejected
+    ) {
+      return analysis;
+    }
+    const problem = await this.repository.findProblemForAnalysis(problemId);
+    if (!problem) return analysis;
+    try {
+      const duplicate = await this.duplicateDetector.findPotentialDuplicate(
+        problemId,
+        problem,
+      );
+      return duplicate
+        ? toAnalysisView(
+            await this.repository.markDuplicateRejected(analysis.id, duplicate),
+          )
+        : analysis;
+    } catch {
+      return toAnalysisView(
+        await this.repository.markFailed(
+          analysis.id,
+          "Duplicate detection is temporarily unavailable; please retry AI validation.",
+        ),
+      );
+    }
   }
 
   async getAnalysis(problemId: string): Promise<ProblemAnalysisCollection> {
@@ -120,6 +162,7 @@ export class ProblemAiService implements ProblemAiServiceContract {
       await this.repository.applyValidationStatus(
         problemId,
         analysis.isSocietalProblem === true,
+        analysis.reason,
       );
     }
   }
@@ -132,6 +175,7 @@ export interface ProblemAiRepositoryContract {
   markCompleted: ProblemAiRepository["markCompleted"];
   markFailed: ProblemAiRepository["markFailed"];
   applyValidationStatus?: ProblemAiRepository["applyValidationStatus"];
+  markDuplicateRejected?: ProblemAiRepository["markDuplicateRejected"];
   findAnalyses: ProblemAiRepository["findAnalyses"];
 }
 

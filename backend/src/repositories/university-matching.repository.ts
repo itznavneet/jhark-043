@@ -52,6 +52,7 @@ interface DuplicateRow {
   id: string;
   title: string;
   currentStatus: string;
+  contentText: string;
   similarity: number;
 }
 
@@ -159,7 +160,13 @@ export class UniversityMatchingRepository {
     embeddingModel: string,
     limit = 10,
   ): Promise<
-    Array<{ id: string; title: string; status: string; similarity: number }>
+    Array<{
+      id: string;
+      title: string;
+      status: string;
+      contentText: string;
+      similarity: number;
+    }>
   > {
     const vector = toVectorLiteral(embedding);
     const rows = await this.client.$queryRaw<DuplicateRow[]>(Prisma.sql`
@@ -167,6 +174,7 @@ export class UniversityMatchingRepository {
         p."id",
         p."title",
         p."currentStatus"::text AS "currentStatus",
+        e."contentText",
         (1 - (e."embedding" <=> ${vector}::vector))::double precision AS "similarity"
       FROM "ProblemEmbedding" e
       INNER JOIN "Problem" p ON p."id" = e."problemId"
@@ -180,6 +188,7 @@ export class UniversityMatchingRepository {
       id: row.id,
       title: row.title,
       status: row.currentStatus,
+      contentText: row.contentText,
       similarity: row.similarity,
     }));
   }

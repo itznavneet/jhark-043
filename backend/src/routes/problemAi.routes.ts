@@ -3,15 +3,19 @@ import { UserRole } from "@prisma/client";
 import type { AppEnvironment } from "../config/environment.js";
 import { OpenAiProblemAnalysisProvider } from "../ai/openAiProblemAnalysis.provider.js";
 import { DevelopmentProblemAnalysisProvider } from "../ai/developmentProblemAnalysis.provider.js";
+import { DevelopmentEmbeddingProvider } from "../ai/developmentEmbedding.provider.js";
 import { createProblemAiController } from "../controllers/problemAi.controller.js";
 import { createAuthenticate } from "../middleware/authenticate.js";
 import { requireRole } from "../middleware/requireRole.js";
 import { AuthRepository } from "../repositories/auth.repository.js";
 import { ProblemAiRepository } from "../repositories/problem-ai.repository.js";
+import { UniversityMatchingRepository } from "../repositories/university-matching.repository.js";
+import { OpenAiEmbeddingProvider } from "../ai/openAiEmbedding.provider.js";
 import {
   ProblemAiService,
   type ProblemAiServiceContract,
 } from "../services/problemAi.service.js";
+import { SemanticProblemDuplicateService } from "../services/problemDuplicate.service.js";
 import { TokenService } from "../services/token.service.js";
 import { problemIdParamsSchema } from "../validators/problem.validator.js";
 import { validateRequest } from "../validators/validate.js";
@@ -36,6 +40,12 @@ export function createProblemAiRoutes(
       environment.openAiApiKey
         ? new OpenAiProblemAnalysisProvider(environment)
         : new DevelopmentProblemAnalysisProvider(),
+      new SemanticProblemDuplicateService(
+        new UniversityMatchingRepository(),
+        environment.openAiApiKey
+          ? new OpenAiEmbeddingProvider(environment)
+          : new DevelopmentEmbeddingProvider(),
+      ),
     );
   const authenticate = createAuthenticate(tokenService, authRepository);
   const ministry = [

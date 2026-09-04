@@ -15,6 +15,7 @@ export interface ProblemForAnalysis {
   villageLocality: string | null;
   desiredOutcome: string | null;
   supportingInformation: string | null;
+  priority: ProblemPriority | null;
   category: string | null;
   evidence: Array<{
     type: string;

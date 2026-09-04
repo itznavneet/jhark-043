@@ -85,9 +85,10 @@ export default function MyProblemsPage() {
         </section>
         <ProblemForm
           accessToken={accessToken}
-          onCreated={(problem) =>
-            setProblems((current) => [problem, ...current])
-          }
+          onCreated={(problem) => {
+            setProblems((current) => [problem, ...current]);
+            void loadProblems();
+          }}
         />
       </div>
       <section className="mt-8 flex flex-col gap-4 rounded-2xl border border-teal-200 bg-teal-50 p-5 sm:flex-row sm:items-center sm:justify-between">

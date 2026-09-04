@@ -21,6 +21,16 @@ const problemListInclude = {
       organizationName: true,
     },
   },
+  aiAnalyses: {
+    where: { processingStatus: "COMPLETED" as const },
+    orderBy: { createdAt: "desc" as const },
+    take: 1,
+    select: {
+      validationDecision: true,
+      reason: true,
+      category: { select: { id: true, name: true } },
+    },
+  },
 } as const;
 
 const problemDetailInclude = {

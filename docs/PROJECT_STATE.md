@@ -580,6 +580,36 @@ This remains an MVP/SIH demonstration system, not production-ready.
 | `frontend: npm.cmd run lint`, `npm.cmd exec -- tsc --noEmit --incremental false`, `npm.cmd run build` | Passed: Next.js production build generated all 17 routes. |
 | `git diff --check` | Passed. |
 
+## Complete AI validation and duplicate-gated publication (2026-09-04)
+
+### COMPLETED
+
+- Fixed submitter status propagation by returning the post-analysis persisted problem record. Rejected submissions now display `AI Rejected` instead of remaining `Submitted`.
+- Added persisted AI decision codes `VALIDATED`, `REJECTED_IRRELEVANT`, and `REJECTED_DUPLICATE` while retaining legacy enum values for historical records.
+- AI validation now evaluates the complete submission payload, with description treated as a primary signal; development validation rejects personal/family/friend content even when the title sounds societal.
+- Integrated semantic duplicate detection into submission processing using the existing pgvector problem-embedding infrastructure. Duplicate submissions remain out of community publication and include the existing problem title/similarity in the analysis reason.
+- Validated submissions alone move to `AI_VALIDATED` and the community feed; rejected and failed submissions do not enter voting or Ministry review.
+
+### VERIFIED COMMANDS
+
+| Command/check | Result |
+| --- | --- |
+| `backend: npm.cmd exec -- prisma generate` | Passed with the normal binary client restored; `--no-engine` was used only temporarily while an active server held the engine lock. |
+| `backend: npm.cmd exec -- prisma migrate deploy` | Passed: applied `20260904100000_ai_validation_decision_codes`; 17 migrations applied/current. |
+| `backend: npm.cmd run typecheck` | Passed. |
+| `backend: npm.cmd run lint` | Passed. |
+| `backend: targeted Prettier check/write for AI files` | Passed for changed AI files. The repository-wide check still reports six pre-existing auth files outside this change. |
+| `backend: RUN_PROBLEM_INTELLIGENCE_INTEGRATION=true npm.cmd test -- problem-intelligence.integration` | Passed: valid submission, personal rejection, misleading-title rejection, similar-category validation, semantic duplicate rejection, persisted status, and community exclusion. |
+| `backend: all integration flags including RUN_PROBLEM_INTELLIGENCE_INTEGRATION + npm.cmd test` | Passed: 21 files, 52 tests passed, including the complete existing E2E journey and all new AI-gated submission cases. |
+| `frontend: npm.cmd run lint`, `npm.cmd exec -- tsc --noEmit --incremental false`, `npm.cmd run build` | Passed: Next.js production build generated 19 routes, including persisted AI rejection rendering. |
+| `backend: npm.cmd exec -- prisma migrate status` | Passed: 17 migrations found; database schema is up to date. |
+| `git diff --check` | Passed; Git reported only normal LF/CRLF working-tree warnings. |
+
+### KNOWN LIMITATIONS
+
+- Existing problems created before this change need a problem embedding before submission-time duplicate detection can compare against them; the existing Ministry matching/indexing path can backfill embeddings.
+- Live OpenAI duplicate thresholds depend on embedding quality and still require Ministry oversight; the deterministic development provider uses an additional token-overlap guard for reliable local demonstrations.
+
 ### NEXT PHASE
 
 The next work should be driven by demonstration feedback: richer application review/export, vote moderation, and broader frontend automated/visual tests remain optional follow-up work.
