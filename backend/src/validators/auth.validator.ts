@@ -53,3 +53,11 @@ export const changePasswordSchema = z
     path: ["newPassword"],
     message: "New password must be different from the current password",
   });
+
+export const updateProfileSchema = z.object({
+  displayName: z
+    .string()
+    .trim()
+    .min(2, "Name must contain at least 2 characters.")
+    .max(160, "Name must be 160 characters or fewer."),
+});

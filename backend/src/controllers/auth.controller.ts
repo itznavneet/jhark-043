@@ -2,7 +2,7 @@ import type { Request, RequestHandler } from "express";
 import type { AppEnvironment } from "../config/environment.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import type { AuthServiceContract } from "../services/auth.service.js";
-import type { LoginInput } from "../types/auth.js";
+import type { LoginInput, UpdateProfileInput } from "../types/auth.js";
 import { sendSuccess } from "../utils/apiResponse.js";
 import {
   clearRefreshCookie,
@@ -19,6 +19,7 @@ export function createAuthController(
   logout: RequestHandler;
   me: RequestHandler;
   changePassword: RequestHandler;
+  updateProfile: RequestHandler;
   registerSubmitter: RequestHandler;
 } {
   return {
@@ -67,6 +68,13 @@ export function createAuthController(
         request.auth!.userId,
         request.body.currentPassword,
         request.body.newPassword,
+      );
+      sendSuccess(response, { user });
+    }),
+    updateProfile: asyncHandler(async (request, response) => {
+      const user = await authService.updateProfile(
+        request.auth!.userId,
+        request.body as UpdateProfileInput,
       );
       sendSuccess(response, { user });
     }),

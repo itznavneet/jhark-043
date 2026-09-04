@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { registerSubmitter } from "../lib/api";
 import { ErrorAlert, PrimaryButton } from "./ui";
 import { PasswordField } from "./PasswordField";
+import { useAuth } from "../lib/auth";
 
 export function RegisterSubmitterForm({
   initialSubmitterType = "INDIVIDUAL_CITIZEN",
@@ -14,6 +15,7 @@ export function RegisterSubmitterForm({
     "INDIVIDUAL_CITIZEN" | "PANCHAYATI_RAJ" | "ORGANIZATION";
 }) {
   const router = useRouter();
+  const { signIn } = useAuth();
   const [form, setForm] = useState({
     displayName: "",
     email: "",
@@ -33,14 +35,15 @@ export function RegisterSubmitterForm({
     setError(null);
     setSubmitting(true);
     try {
-      await registerSubmitter({
+      const createdUser = await registerSubmitter({
         ...form,
         submitterType: form.submitterType as
           "INDIVIDUAL_CITIZEN" | "PANCHAYATI_RAJ" | "ORGANIZATION",
         organizationName: form.organizationName || undefined,
         description: form.description || undefined,
       });
-      router.replace("/login?registered=1");
+      await signIn(form.email, form.password, "SUBMITTER");
+      router.replace(createdUser.mustChangePassword ? "/account/setup" : "/my-problems");
     } catch (requestError) {
       setError(
         requestError instanceof Error

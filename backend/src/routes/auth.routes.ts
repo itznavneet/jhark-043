@@ -12,6 +12,7 @@ import {
   changePasswordSchema,
   loginSchema,
   submitterRegistrationSchema,
+  updateProfileSchema,
 } from "../validators/auth.validator.js";
 import { validateRequest } from "../validators/validate.js";
 
@@ -53,6 +54,12 @@ export function createAuthRoutes(
     authenticate,
     validateRequest({ body: changePasswordSchema }),
     controller.changePassword,
+  );
+  router.patch(
+    "/me",
+    authenticate,
+    validateRequest({ body: updateProfileSchema }),
+    controller.updateProfile,
   );
 
   return router;

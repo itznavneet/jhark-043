@@ -35,6 +35,10 @@ export interface SubmitterRegistrationInput {
   description?: string;
 }
 
+export interface UpdateProfileInput {
+  displayName: string;
+}
+
 export interface RequestMetadata {
   userAgent: string | null;
   ipAddress: string | null;

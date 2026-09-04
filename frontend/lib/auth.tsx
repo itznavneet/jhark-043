@@ -6,6 +6,7 @@ import {
   login,
   logout,
   refresh,
+  updateProfile as updateProfileRequest,
   type LoginAccountType,
   type PublicUser,
 } from "./api";
@@ -24,6 +25,7 @@ interface AuthContextValue {
     currentPassword: string,
     newPassword: string,
   ): Promise<PublicUser>;
+  updateProfile(displayName: string): Promise<PublicUser>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -66,6 +68,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           newPassword,
           accessToken,
         );
+        setUser(updatedUser);
+        return updatedUser;
+      },
+      async updateProfile(displayName) {
+        if (!accessToken) throw new Error("Authentication is required");
+        const updatedUser = await updateProfileRequest(displayName, accessToken);
         setUser(updatedUser);
         return updatedUser;
       },

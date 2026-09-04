@@ -135,6 +135,17 @@ export class AuthRepository {
     });
   }
 
+  async updateDisplayName(
+    userId: string,
+    displayName: string,
+  ): Promise<AuthUserRecord> {
+    return this.client.$transaction(async (transaction) => {
+      await transaction.user.update({ where: { id: userId }, data: { displayName } });
+      await transaction.submitterProfile.updateMany({ where: { userId }, data: { displayName } });
+      return transaction.user.findUniqueOrThrow({ where: { id: userId }, select: authUserSelect });
+    });
+  }
+
   async revokeRefreshSessionsForUser(userId: string): Promise<void> {
     await this.client.refreshSession.updateMany({
       where: { userId, revokedAt: null },
