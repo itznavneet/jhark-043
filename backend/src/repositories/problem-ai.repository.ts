@@ -10,6 +10,7 @@ import { database } from "../config/database.js";
 import type { ProblemAnalysisOutput, ProblemForAnalysis } from "../types/ai.js";
 import { notifyAiAnalysisCompleted } from "../services/notificationEvents.js";
 import { notifyProblemLifecycle } from "../services/notificationEvents.js";
+import { canonicalizeProblemCategory } from "../domain/problemCategories.js";
 
 const analysisInclude = {
   category: { select: { id: true, name: true } },
@@ -101,16 +102,30 @@ export class ProblemAiRepository {
     modelName: string,
     promptVersion: string,
   ): Promise<ProblemAnalysisRecord> {
-    const category = await this.client.problemCategory.upsert({
-      where: { name: output.category },
-      update: {},
-      create: { name: output.category },
-    });
+    const categoryName = output.isSocietalProblem
+      ? canonicalizeProblemCategory(
+          output.category,
+          [
+            output.summary,
+            ...output.keywords,
+            ...output.potentialSolutionAreas,
+          ].join(" "),
+        )
+      : null;
+    const category = categoryName
+      ? await this.client.problemCategory.upsert({
+          where: { name: categoryName },
+          update: {},
+          create: { name: categoryName },
+        })
+      : null;
 
     const analysis = await this.client.problemAIAnalysis.update({
       where: { id },
       data: {
-        category: { connect: { id: category.id } },
+        category: category
+          ? { connect: { id: category.id } }
+          : { disconnect: true },
         processingStatus: AiProcessingStatus.COMPLETED,
         validationDecision: output.isSocietalProblem
           ? AiValidationDecision.VALIDATED

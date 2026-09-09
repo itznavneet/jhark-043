@@ -2,6 +2,7 @@ import type {
   ProblemAnalysisProvider,
   ProblemForAnalysis,
 } from "../types/ai.js";
+import { canonicalizeProblemCategory } from "../domain/problemCategories.js";
 
 const privateProblemSignals = [
   "family dispute",
@@ -50,7 +51,7 @@ export class DevelopmentProblemAnalysisProvider implements ProblemAnalysisProvid
       reason: isSocietalProblem
         ? "The submission contains a substantive challenge that can affect a community or institution and is suitable for further public-interest review."
         : "The submission appears personal, private, too brief, or outside the societal innovation scope. Please provide a clear community or institutional challenge in the description.",
-      category: problem.category ?? "General societal innovation",
+      category: canonicalizeProblemCategory(problem.category, text),
       summary: problem.description.slice(0, 500),
       keywords: [problem.category ?? "societal innovation"],
       requiredExpertise: [],

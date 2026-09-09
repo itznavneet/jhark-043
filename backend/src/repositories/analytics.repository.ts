@@ -60,10 +60,39 @@ export class AnalyticsRepository {
     return this.client
       .$queryRaw<Array<{ label: string; value: bigint }>>(
         Prisma.sql`
-        SELECT COALESCE(pc."name", 'Uncategorized') AS label, COUNT(*) AS value
-        FROM "Problem" p
-        LEFT JOIN "ProblemCategory" pc ON pc."id" = p."categoryId"
-        GROUP BY COALESCE(pc."name", 'Uncategorized')
+        WITH eligible_problems AS (
+          SELECT
+            COALESCE(pc."name", '') AS category_name,
+            LOWER(CONCAT_WS(' ',
+              COALESCE(pc."name", ''),
+              p."title",
+              p."description",
+              COALESCE(p."societalContext", ''),
+              COALESCE(p."desiredOutcome", ''),
+              COALESCE(p."supportingInformation", '')
+            )) AS search_text
+          FROM "Problem" p
+          LEFT JOIN "ProblemCategory" pc ON pc."id" = p."categoryId"
+          WHERE p."currentStatus" NOT IN ('SUBMITTED', 'AI_REJECTED', 'MINISTRY_REJECTED')
+        ), classified_problems AS (
+          SELECT CASE
+            WHEN search_text ~ '(education|school|student|learning|literacy|library|teacher|college)' THEN 'Education'
+            WHEN search_text ~ '(health|healthcare|hospital|clinic|medical|patient|vaccine|diagnostic)' THEN 'Healthcare'
+            WHEN search_text ~ '(agriculture|farmer|farming|crop|cultivation|irrigation|livestock|horticulture)' THEN 'Agriculture'
+            WHEN search_text ~ '(drinking water|groundwater|borewell|hand pump|water supply|water quality|water)' THEN 'Water Management'
+            WHEN search_text ~ '(sanitation|waste|sewage|sewer|toilet|solid waste|drainage)' THEN 'Sanitation'
+            WHEN search_text ~ '(environment|climate|pollution|forest|biodiversity|conservation|air quality)' THEN 'Environment'
+            WHEN search_text ~ '(livelihood|rural development|employment|self-help|artisan|income|finance|banking)' THEN 'Rural Livelihoods'
+            WHEN search_text ~ '(accessibility|accessible|disability|disabled|assistive|inclusion|mobility|barrier-free)' THEN 'Accessibility'
+            WHEN search_text ~ '(urban|infrastructure|road|transport|street|electricity|power supply|housing)' THEN 'Urban Infrastructure'
+            WHEN search_text ~ '(public service|governance|civic|municipal|citizen service|administration|government service)' THEN 'Public Service Delivery'
+            ELSE NULLIF(TRIM(category_name), '')
+          END AS label
+          FROM eligible_problems
+        )
+        SELECT COALESCE(label, 'Uncategorized') AS label, COUNT(*) AS value
+        FROM classified_problems
+        GROUP BY COALESCE(label, 'Uncategorized')
         ORDER BY value DESC, label ASC
       `,
       )

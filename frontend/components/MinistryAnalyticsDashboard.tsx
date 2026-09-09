@@ -204,7 +204,7 @@ function SectionHeading({
 }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-workflow">
         {eyebrow}
       </p>
       <h2 className="mt-1 text-2xl font-bold text-ink">{title}</h2>
@@ -232,12 +232,12 @@ function TimeSeries({
                 {item.value}
               </span>
               <div
-                className="w-full rounded-t-md bg-teal-100"
+                className="w-full rounded-t-md bg-green-100"
                 style={{
                   height: `${Math.max((item.value / maximum) * 100, 8)}%`,
                 }}
               >
-                <div className="h-full rounded-t-md bg-accent" />
+                <div className="h-full rounded-t-md bg-workflow" />
               </div>
               <span className="text-[10px] text-slate-400">{item.period}</span>
             </div>
@@ -270,7 +270,7 @@ function DecisionPanel({
       <div className="mt-6 border-t border-slate-100 pt-5">
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-500">University acceptance rate</span>
-          <span className="font-bold text-accent">{rate}</span>
+          <span className="font-bold text-workflow">{rate}</span>
         </div>
         <p className="mt-2 text-xs text-slate-400">
           {acceptance.accepted} accepted of {acceptance.invited} invitation

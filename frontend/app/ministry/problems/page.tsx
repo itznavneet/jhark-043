@@ -169,7 +169,7 @@ export default function MinistryProblemsPage() {
               key={problem.id}
               onClick={() => setSelected(problem)}
             >
-              <p className="text-xs font-semibold uppercase tracking-wide text-accent">
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">
                 {problem.category?.name ?? "Uncategorized"}
               </p>
               <p className="mt-1 font-semibold text-ink">{problem.title}</p>
@@ -190,7 +190,7 @@ export default function MinistryProblemsPage() {
             <Panel>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-wide text-accent">
+                  <p className="text-sm font-semibold uppercase tracking-wide text-primary">
                     {selected.category?.name ?? "Uncategorized"}
                   </p>
                   <h2 className="mt-2 text-2xl font-bold text-ink">

@@ -14,7 +14,7 @@ export default function RegisterPage() {
     return <RegisterSubmitterForm initialSubmitterType={submitterType} />;
   }
   return (
-    <main className="min-h-screen bg-canvas px-5 py-12 sm:px-8">
+    <main className="public-page">
       <div className="mx-auto max-w-4xl">
         <p className="page-eyebrow">Join the portal</p>
         <h1 className="page-title">Who are you?</h1>

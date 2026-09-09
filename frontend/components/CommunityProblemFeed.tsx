@@ -82,7 +82,7 @@ export function CommunityProblemFeed({ accessToken }: { accessToken: string }) {
           <article className="panel flex flex-col p-5" key={item.id}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-accent">{item.category?.name ?? "Societal challenge"}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary">{item.category?.name ?? "Societal challenge"}</p>
                 <h3 className="mt-1 text-lg font-bold text-ink">{item.title}</h3>
               </div>
               <StatusBadge status={item.currentStatus} />

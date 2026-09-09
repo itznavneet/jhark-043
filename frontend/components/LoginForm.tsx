@@ -7,6 +7,7 @@ import Link from "next/link";
 import type { LoginAccountType } from "../lib/api";
 import { ErrorAlert, PrimaryButton } from "./ui";
 import { PasswordField } from "./PasswordField";
+import { JharkhandMap } from "./JharkhandMap";
 
 export function LoginForm() {
   const router = useRouter();
@@ -48,33 +49,54 @@ export function LoginForm() {
   }
 
   return (
-    <main className="grid min-h-screen bg-canvas lg:grid-cols-[1.1fr_0.9fr]">
-      <section className="hidden bg-ink px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between lg:px-16">
-        <div>
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-teal-200">
-            SIH 26043
-          </p>
-          <h1 className="mt-8 max-w-xl text-5xl font-black leading-tight">
+    <main className="grid min-h-screen bg-canvas lg:grid-cols-[1.08fr_0.92fr]">
+      <section className="relative hidden overflow-hidden bg-primary px-10 py-10 text-white lg:flex lg:flex-col lg:justify-between lg:px-16">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.16),transparent_32%),linear-gradient(145deg,#07386f,#0b4f9c_60%,#1268b4)]" aria-hidden="true" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3">
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-lg font-black text-white shadow-lg">SI</span>
+            <div>
+              <p className="text-sm font-extrabold tracking-tight">Societal Innovation</p>
+              <p className="text-xs text-blue-100">Collaboration Portal</p>
+            </div>
+          </div>
+          <p className="mt-16 text-sm font-bold uppercase tracking-[0.2em] text-orange-200">SIH 26043 · Jharkhand</p>
+          <h1 className="mt-5 max-w-xl text-4xl font-black leading-tight sm:text-5xl">
             Turn local challenges into shared solutions.
           </h1>
-          <p className="mt-6 max-w-lg text-base leading-7 text-slate-300">
+          <p className="mt-5 max-w-lg text-base leading-7 text-blue-50">
             A trusted workspace for communities, universities, government, and
             industry to move societal innovation from idea to measurable impact.
           </p>
+          <div className="mt-7 flex items-center gap-3 text-sm font-semibold text-blue-50">
+            <span className="h-0.5 w-10 bg-accent" />
+            From Jharkhand, for communities everywhere.
+          </div>
         </div>
-        <p className="text-sm text-slate-400">
+        <div className="relative z-10 mt-8">
+          <JharkhandMap />
+          <p className="mt-2 text-xs text-blue-100">A Ministry-governed network for ideas, capability, and impact.</p>
+        </div>
+        <p className="relative z-10 text-sm text-blue-100">
           Societal Innovation Collaboration Portal
         </p>
       </section>
-      <section className="flex items-center justify-center px-5 py-10 sm:px-8">
+      <section className="flex items-center justify-center px-5 py-10 sm:px-8 lg:px-12">
         <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
-            <p className="page-eyebrow">SIH 26043</p>
-            <h1 className="page-title">Societal Innovation Portal</h1>
+            <div className="flex items-center gap-3">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-accent text-sm font-black text-white">SI</span>
+              <div><p className="text-sm font-extrabold text-ink">Societal Innovation</p><p className="text-xs text-slate-500">Collaboration Portal</p></div>
+            </div>
+            <p className="page-eyebrow mt-8">SIH 26043 · Jharkhand</p>
+            <h1 className="page-title">Turn local challenges into shared solutions.</h1>
+            <div className="mt-6 rounded-2xl bg-primary p-4">
+              <JharkhandMap />
+            </div>
           </div>
           <div className="panel p-7 sm:p-9">
             <p className="page-eyebrow">Secure workspace</p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-ink">
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">
               Sign in to collaborate
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -113,7 +135,7 @@ export function LoginForm() {
                     ] as const
                   ).map(([value, label]) => (
                     <label
-                      className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2.5 text-sm ${accountType === value ? "border-accent bg-teal-50 text-ink" : "border-slate-200 text-slate-600"}`}
+                      className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition ${accountType === value ? "border-accent bg-orange-50 font-semibold text-ink" : "border-slate-200 text-slate-600 hover:border-primary hover:bg-blue-50"}`}
                       key={value}
                     >
                       <input

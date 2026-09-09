@@ -25,7 +25,7 @@ export function AnalyticsBarList({
               </div>
               <div className="h-2 rounded-full bg-slate-100">
                 <div
-                  className="h-2 rounded-full bg-accent transition-all"
+                  className="h-2 rounded-full bg-workflow transition-all"
                   style={{
                     width: `${Math.max((item.value / maximum) * 100, 3)}%`,
                   }}

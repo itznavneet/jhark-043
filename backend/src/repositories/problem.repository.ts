@@ -10,6 +10,7 @@ import {
   notifyProblemLifecycle,
   notifyProblemSubmitted,
 } from "../services/notificationEvents.js";
+import { canonicalizeProblemCategory } from "../domain/problemCategories.js";
 
 const problemListInclude = {
   category: { select: { id: true, name: true, description: true } },
@@ -64,10 +65,21 @@ export class ProblemRepository {
     input: CreateProblemInput,
   ): Promise<ProblemDetailRecord> {
     return this.client.$transaction(async (transaction) => {
+      const categoryName = canonicalizeProblemCategory(
+        input.category,
+        [
+          input.title,
+          input.description,
+          input.societalContext,
+          input.desiredOutcome,
+        ]
+          .filter(Boolean)
+          .join(" "),
+      );
       const category = await transaction.problemCategory.upsert({
-        where: { name: input.category },
+        where: { name: categoryName },
         update: {},
-        create: { name: input.category },
+        create: { name: categoryName },
       });
 
       const problem = await transaction.problem.create({

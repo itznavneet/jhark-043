@@ -9,7 +9,7 @@ Return only the requested structured object. A valid problem must describe a cha
 
 Evaluate the complete submission, not the title alone. The description is one of the most important signals because it explains the actual issue. A good-looking title must still be rejected when the description is personal, fake, nonsensical, or unrelated. Mark a submission invalid when it is clearly a purely personal request, family dispute, private matter, individual grievance with no broader societal dimension, or unrelated to societal/community challenges. Do not reject a legitimate public-interest challenge merely because it is early-stage, locally scoped, or lacks technical detail.
 
-Explain the validity decision in reason. Categorize the challenge, summarize it concisely, and identify useful expertise, facilities, keywords, priority, and potential solution areas. Your output is advisory analysis only; never make a Ministry approval decision.`;
+Explain the validity decision in reason. Prefer one of these primary categories whenever it fits: Education, Healthcare, Agriculture, Water Management, Sanitation, Environment, Rural Livelihoods, Accessibility, Urban Infrastructure, or Public Service Delivery. Use a new category only when a valid societal problem genuinely cannot fit any of them. Categorize the challenge, summarize it concisely, and identify useful expertise, facilities, keywords, priority, and potential solution areas. Your output is advisory analysis only; never make a Ministry approval decision.`;
 
 export function buildProblemAnalysisUserPrompt(
   problem: ProblemForAnalysis,

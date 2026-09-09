@@ -298,6 +298,50 @@ Project delivery, impact REST APIs, notifications, and Ministry analytics are im
 
 This repository is an MVP/SIH demonstration system. It is not production-ready.
 
+## Visual redesign update (2026-09-05)
+
+### COMPLETED
+
+- Applied the blue government/public-service visual language through shared Tailwind tokens and global component styles.
+- Updated dashboard page headers to use a responsive blue hero treatment with orange accent detail, while preserving their existing content and action order.
+- Updated the shared shell with orange active navigation, blue brand treatment, consistent spacing, and preserved notification, sign-out, and profile controls.
+- Restyled shared panels, buttons, inputs, status badges, lifecycle controls, registration screens, and sign-in experience without changing API calls or workflow logic.
+- Added an offline, self-contained Jharkhand SVG illustration with district tooltips to the sign-in/landing experience.
+- Changed lifecycle progress markers, connectors, project/problem timeline accents, and Ministry analytics bars/highlights from orange to the shared green `workflow` token; orange remains reserved for primary actions and active navigation.
+- Changed university workspace labels and Community Problems category labels from orange accent text to the primary blue token; accepted, cancelled, and rejected status badge colors remain unchanged.
+- Changed Ministry problem-list and selected-problem category labels from orange accent text to the primary blue token; Ministry decision and lifecycle status colors remain unchanged.
+
+### VERIFIED COMMANDS
+
+| Command/check | Result |
+| --- | --- |
+| `frontend: npm.cmd run lint` | Passed. |
+| `frontend: npm.cmd exec -- tsc --noEmit --incremental false` | Passed. |
+| `git diff --check` | Passed. |
+| `frontend: NEXT_TELEMETRY_DISABLED=1 npm.cmd run build` | Attempted; Next.js emitted its version banner but stalled in the local Windows workspace, so it was stopped and not reported as passed. |
+
+## Ministry analytics category correction (2026-09-05)
+
+### COMPLETED
+
+- Added the ten primary Ministry categories: Education, Healthcare, Agriculture, Water Management, Sanitation, Environment, Rural Livelihoods, Accessibility, Urban Infrastructure, and Public Service Delivery.
+- Normalized new problem and valid AI-analysis categories toward the primary list, while retaining an unmatched category only as a fallback for a valid problem that does not fit the primary taxonomy.
+- Updated the Ministry `Problems by category` aggregation to classify legacy records using category, title, description, societal context, desired outcome, and supporting information.
+- Excluded `SUBMITTED`, `AI_REJECTED`, and `MINISTRY_REJECTED` problems from category counts, so rejected/pending submissions such as Personal, Family Problem, and Teasing do not appear.
+- Kept the existing analytics UI, progress-bar component, statuses, and API contract unchanged.
+
+### VERIFIED COMMANDS
+
+| Command/check | Result |
+| --- | --- |
+| `backend: npm.cmd exec -- prettier --check` for changed category/analytics files | Passed. |
+| `backend: npm.cmd run lint` | Passed. |
+| `backend: npm.cmd run typecheck` | Passed. |
+| `backend: npm.cmd test` | Passed: 52 tests passed; existing database integration tests were skipped without opt-in. |
+| `backend: npm.cmd test -- problemCategories.test.ts` | Passed: 7 category normalization tests. |
+| `RUN_ANALYTICS_INTEGRATION=true DATABASE_URL=... npm.cmd test -- analytics.integration.test.ts` | Blocked: PostgreSQL at `localhost:55432` was unreachable; no data was changed. |
+| `git diff --check` | Passed. |
+
 ### COMPLETED
 
 - Audited authentication, JWT access tokens, refresh-session rotation, logout invalidation, password hashing, safe user mapping, and current-user access.

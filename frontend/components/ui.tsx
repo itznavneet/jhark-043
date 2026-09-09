@@ -12,13 +12,13 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <header className="flex flex-col gap-5 border-b border-slate-200 pb-7 sm:flex-row sm:items-end sm:justify-between">
-      <div>
+    <header className="page-hero -mx-4 -mt-7 flex flex-col gap-5 sm:-mx-6 sm:-mt-9 lg:-mx-8 sm:flex-row sm:items-end sm:justify-between">
+      <div className="relative z-10">
         <p className="page-eyebrow">{eyebrow}</p>
         <h1 className="page-title">{title}</h1>
         {description ? <p className="page-description">{description}</p> : null}
       </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
+      {action ? <div className="relative z-10 shrink-0">{action}</div> : null}
     </header>
   );
 }

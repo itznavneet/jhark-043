@@ -11,7 +11,7 @@ export function AnalyticsCard({
 }) {
   const tones = {
     slate: "bg-slate-50 text-slate-700",
-    teal: "bg-teal-50 text-teal-700",
+    teal: "bg-emerald-50 text-emerald-700",
     amber: "bg-amber-50 text-amber-700",
     blue: "bg-blue-50 text-blue-700",
     rose: "bg-rose-50 text-rose-700",

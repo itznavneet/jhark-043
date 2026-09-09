@@ -55,7 +55,7 @@ export function RegisterSubmitterForm({
     }
   }
   return (
-    <main className="min-h-screen bg-canvas px-5 py-12 sm:px-8">
+    <main className="public-page">
       <div className="mx-auto max-w-2xl">
         <p className="page-eyebrow">Submitter registration</p>
         <h1 className="page-title">Create your citizen account</h1>

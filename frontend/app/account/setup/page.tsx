@@ -57,7 +57,7 @@ export default function AccountSetupPage() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-canvas px-5 py-10">
+    <main className="grid min-h-screen place-items-center public-page">
       <form
         className="panel w-full max-w-md space-y-5 p-7 sm:p-9"
         onSubmit={submit}

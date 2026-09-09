@@ -5,10 +5,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#14213d",
-        canvas: "#f7f8fb",
-        accent: "#0f766e",
-        coral: "#d95d5d",
+        ink: "#0b2f62",
+        canvas: "#f4f8fc",
+        accent: "#f15a24",
+        coral: "#dc3b3b",
+        primary: "#0b4f9c",
+        workflow: "#16a34a",
       },
     },
   },

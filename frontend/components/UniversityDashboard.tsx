@@ -159,7 +159,7 @@ export function UniversityDashboard({ accessToken }: { accessToken: string }) {
                 setError(null);
               }}
             >
-              <p className="text-xs font-semibold uppercase tracking-wide text-accent">
+                  <p className={`text-xs font-semibold uppercase tracking-wide ${assignmentStatusTextClass(assignment.status)}`}>
                 {assignment.status}
               </p>
               <p className="mt-1 font-semibold text-ink">
@@ -182,7 +182,7 @@ export function UniversityDashboard({ accessToken }: { accessToken: string }) {
             <Panel>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-wide text-accent">
+                  <p className="text-sm font-semibold uppercase tracking-wide text-primary">
                     {selected.problem.category?.name ?? "Societal challenge"}
                   </p>
                   <h2 className="mt-2 text-2xl font-bold text-ink">
@@ -267,6 +267,12 @@ export function UniversityDashboard({ accessToken }: { accessToken: string }) {
       </div>
     </div>
   );
+}
+
+function assignmentStatusTextClass(status: string) {
+  if (status === "ACCEPTED") return "text-emerald-700";
+  if (["REJECTED", "CANCELLED"].includes(status)) return "text-rose-700";
+  return "text-primary";
 }
 
 function TeamSummary({

@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "../lib/auth";
 import { NotificationBell } from "./NotificationBell";
 import { ProfileCard } from "./ProfileCard";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { accessToken, signOut, user } = useAuth();
+  const pathname = usePathname();
   const homePath =
     user?.role === "MINISTRY_ADMIN"
       ? "/ministry/problems"
@@ -42,7 +44,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-slate-200/90 bg-white/95 shadow-[0_4px_18px_-16px_rgba(23,50,77,0.7)] backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-slate-200/90 bg-white/95 shadow-[0_4px_18px_-16px_rgba(11,47,98,0.22)] backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <Link className="mr-auto flex items-center gap-3" href={homePath}>
             <span
@@ -68,7 +70,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               >
                 {links.map(([label, href]) => (
                   <Link
-                    className="rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-teal-50 hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                    className={`shell-nav-link ${pathname === href || pathname.startsWith(`${href}/`) ? "is-active" : ""}`}
                     href={href}
                     key={href}
                   >
@@ -76,7 +78,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Link>
                 ))}
                 <Link
-                  className="rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-teal-50 hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  className={`shell-nav-link ${pathname === "/notifications" || pathname.startsWith("/notifications/") ? "is-active" : ""}`}
                   href="/notifications"
                 >
                   Notifications

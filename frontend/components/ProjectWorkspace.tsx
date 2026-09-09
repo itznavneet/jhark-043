@@ -222,7 +222,7 @@ function ProjectDetails({
         <h3 className="font-semibold text-ink">Lifecycle</h3>
         <div className="mt-3 space-y-2">
           {project.statusHistory.map((entry) => (
-            <div key={entry.id} className="border-l-2 border-accent pl-3 text-sm">
+            <div key={entry.id} className="border-l-2 border-workflow pl-3 text-sm">
               <p className="font-medium text-ink">
                 {entry.newStatus.replaceAll("_", " ")}
               </p>
