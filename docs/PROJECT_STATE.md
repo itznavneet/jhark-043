@@ -735,3 +735,24 @@ The next work should be driven by demonstration feedback: richer application rev
 | `frontend: tsc.cmd --noEmit --incremental false` | Passed. |
 | `frontend: npm.cmd run build` | Not completed in this run: `next build` emitted the Next.js version and then stalled without further output, so it was stopped after approximately one minute. Existing project-state records contain earlier successful production builds. |
 | `git diff --check` | Passed; only normal Git LF/CRLF working-tree warnings were reported. |
+
+## Final community and branding UI polish (2026-09-10)
+
+### COMPLETED
+
+- Added a reusable Jharkhand map-based brand mark to the signed-in navigation and sign-in experience while retaining the existing Societal Innovation / Collaboration Portal wordmark.
+- Made Community Problems a prominent, dedicated support entry point from My Challenges and strengthened the dedicated community page header and card hierarchy.
+- Community cards now show clear AI validation/status, location, support progress, and accessible `👍 Upvote` / `👎 Downvote` controls. Existing reversible voting, self-vote prevention, private downvote visibility, and server threshold logic were preserved.
+- When the vote response reaches `MINISTRY_REVIEW`, the card gives immediate feedback that the community threshold was reached and Ministry review is pending. The server remains the source of truth for the transition.
+- Reorganized the problem submission form into labeled sections for challenge basics, place/urgency, coordinates, reviewer context, and evidence without changing its fields, API payload, validation rules, or current-location behavior.
+- Applied the same panel, focus, border, and form-section styling improvements to organization registration and university proposal forms.
+- Kept the existing role navigation, authentication, AI validation, Ministry decisions, workflow APIs, and permissions unchanged.
+
+### VERIFIED COMMANDS
+
+| Command/check | Result |
+| --- | --- |
+| `frontend: npm.cmd run lint` | Passed. |
+| `frontend: tsc.cmd --noEmit --incremental false` | Passed. |
+| `git diff --check` | Passed; only normal Git LF/CRLF working-tree warnings were reported. |
+| `frontend: npm.cmd run build` | Attempted twice; both runs emitted the Next.js version and stalled without further output, so they were stopped after approximately one minute. No build error was emitted. |

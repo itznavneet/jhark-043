@@ -91,7 +91,7 @@ export function ProposalForm({
 
   if (proposal && proposal.status !== "DRAFT")
     return (
-      <section className="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200">
+      <section className="panel p-6 sm:p-8">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-xl font-bold text-ink">Proposal details</h2>
           <StatusBadge status={proposal.status} />
@@ -186,7 +186,7 @@ export function ProposalForm({
     );
 
   return (
-    <section className="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200">
+    <section className="panel p-6 sm:p-8">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-ink">Solution proposal</h2>
@@ -196,12 +196,12 @@ export function ProposalForm({
           </p>
         </div>
         {proposal ? (
-          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+          <span className="status-badge status-warning">
             DRAFT
           </span>
         ) : null}
       </div>
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-5 sm:grid-cols-2">
         <Field
           label="Proposal title"
           value={form.title}
@@ -275,7 +275,7 @@ export function ProposalForm({
           value={form.requestedSupport}
           onChange={(value) => update("requestedSupport", value)}
         />
-        <fieldset className="sm:col-span-2">
+        <fieldset className="form-section sm:col-span-2">
           <legend className="text-sm font-semibold text-slate-700">
             Requested support types
           </legend>
@@ -307,14 +307,14 @@ export function ProposalForm({
       </div>
       <div className="mt-5 flex flex-wrap gap-3">
         <button
-          className="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="btn-secondary"
           disabled={busy}
           onClick={() => void save()}
         >
           Save draft
         </button>
         <button
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="btn-primary"
           disabled={busy}
           onClick={() => void save(true)}
         >

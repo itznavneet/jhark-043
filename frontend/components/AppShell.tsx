@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "../lib/auth";
 import { NotificationBell } from "./NotificationBell";
 import { ProfileCard } from "./ProfileCard";
+import { JharkhandMark } from "./JharkhandMark";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { accessToken, signOut, user } = useAuth();
@@ -47,12 +48,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-30 border-b border-slate-200/90 bg-white/95 shadow-[0_4px_18px_-16px_rgba(11,47,98,0.22)] backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <Link className="mr-auto flex items-center gap-3" href={homePath}>
-            <span
-              className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-sm font-black text-white"
-              aria-hidden="true"
-            >
-              SI
-            </span>
+            <JharkhandMark className="h-10 w-10" />
             <span>
               <span className="block text-sm font-extrabold tracking-tight text-ink">
                 Societal Innovation

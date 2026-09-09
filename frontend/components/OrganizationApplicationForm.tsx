@@ -169,7 +169,7 @@ export function OrganizationApplicationForm({
   ] as const;
 
   return (
-    <form className="panel space-y-5 p-7 sm:p-9" onSubmit={submit}>
+    <form className="panel space-y-6 p-6 sm:p-9" onSubmit={submit}>
       {error ? <ErrorAlert message={error} /> : null}
       <div className="grid gap-5 sm:grid-cols-2">
         {textFields.map(([field, label, required]) => (
@@ -215,7 +215,7 @@ export function OrganizationApplicationForm({
           </label>
         ) : null}
       </div>
-      <label>
+      <label className="block rounded-2xl border border-slate-200 bg-slate-50/45 p-4 sm:p-5">
         <span className="text-sm font-semibold text-slate-700">
           Description
         </span>
@@ -225,7 +225,7 @@ export function OrganizationApplicationForm({
           onChange={(event) => update("description", event.target.value)}
         />
       </label>
-      <label>
+      <label className="block rounded-2xl border border-slate-200 bg-slate-50/45 p-4 sm:p-5">
         <span className="text-sm font-semibold text-slate-700">
           {isUniversity
             ? "Research areas (comma separated)"

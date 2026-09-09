@@ -8,6 +8,7 @@ import type { LoginAccountType } from "../lib/api";
 import { ErrorAlert, PrimaryButton } from "./ui";
 import { PasswordField } from "./PasswordField";
 import { JharkhandMap } from "./JharkhandMap";
+import { JharkhandMark } from "./JharkhandMark";
 
 export function LoginForm() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export function LoginForm() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.16),transparent_32%),linear-gradient(145deg,#07386f,#0b4f9c_60%,#1268b4)]" aria-hidden="true" />
         <div className="relative z-10">
           <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-lg font-black text-white shadow-lg">SI</span>
+            <JharkhandMark className="h-11 w-11 shadow-lg" />
             <div>
               <p className="text-sm font-extrabold tracking-tight">Societal Innovation</p>
               <p className="text-xs text-blue-100">Collaboration Portal</p>
@@ -85,7 +86,7 @@ export function LoginForm() {
         <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
             <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-accent text-sm font-black text-white">SI</span>
+              <JharkhandMark className="h-10 w-10" />
               <div><p className="text-sm font-extrabold text-ink">Societal Innovation</p><p className="text-xs text-slate-500">Collaboration Portal</p></div>
             </div>
             <p className="page-eyebrow mt-8">SIH 26043 · Jharkhand</p>
@@ -94,16 +95,16 @@ export function LoginForm() {
               <JharkhandMap />
             </div>
           </div>
-          <div className="panel p-7 sm:p-9">
+          <div className="panel p-6 sm:p-9">
             <p className="page-eyebrow">Secure workspace</p>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">
+            <h2 className="mt-2 whitespace-nowrap text-[clamp(1.3rem,6vw,2.25rem)] font-extrabold tracking-tight text-ink">
               Sign in to collaborate
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               Submit, review, and advance societal challenges through their
               complete lifecycle.
             </p>
-            <form className="mt-8 space-y-5" onSubmit={submit}>
+            <form className="mt-7 space-y-6" onSubmit={submit}>
               <div>
                 <label
                   className="text-sm font-semibold text-slate-700"
@@ -125,7 +126,7 @@ export function LoginForm() {
                 <legend className="text-sm font-semibold text-slate-700">
                   I am signing in as
                 </legend>
-                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   {(
                     [
                       ["SUBMITTER", "Citizen / Submitter"],
@@ -135,7 +136,7 @@ export function LoginForm() {
                     ] as const
                   ).map(([value, label]) => (
                     <label
-                      className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition ${accountType === value ? "border-accent bg-orange-50 font-semibold text-ink" : "border-slate-200 text-slate-600 hover:border-primary hover:bg-blue-50"}`}
+                      className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-xl border px-3 py-3 text-sm transition ${accountType === value ? "border-accent bg-orange-50 font-semibold text-ink shadow-sm" : "border-slate-200 text-slate-600 hover:border-primary hover:bg-blue-50"}`}
                       key={value}
                     >
                       <input

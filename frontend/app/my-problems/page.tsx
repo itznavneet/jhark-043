@@ -83,6 +83,16 @@ export default function MyProblemsPage() {
           <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">Resolved / delivered</p>
         </article>
       </section>
+      <section className="mt-6 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-orange-50/40 p-5 shadow-sm sm:p-6" aria-labelledby="community-support-title">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="section-eyebrow">Community problems</p>
+            <h2 className="section-title mt-1" id="community-support-title">Support validated challenges</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Browse AI-validated community posts in a dedicated support space. Upvotes help eligible challenges reach Ministry review; Ministry makes the final decision.</p>
+          </div>
+          <a className="btn-primary shrink-0 text-center" href="/community">Browse community problems</a>
+        </div>
+      </section>
       <div className="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1fr)_300px]">
         <section aria-labelledby="challenge-list-title">
           <div className="mb-4 flex items-center justify-between gap-4">
@@ -127,15 +137,6 @@ export default function MyProblemsPage() {
           <p className="mt-3 px-1 text-xs leading-5 text-slate-500">Your submissions remain private until they pass validation and become eligible for community support.</p>
         </aside>
       </div>
-      <section className="mt-8 flex flex-col gap-4 rounded-2xl border border-teal-200 bg-teal-50 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="section-eyebrow">Community support</p>
-          <h2 className="mt-1 text-lg font-bold text-ink">Browse validated community problems</h2>
-          <p className="mt-1 text-sm text-slate-600">Support challenges from other submitters in a dedicated community feed.</p>
-        </div>
-        <a className="btn-primary shrink-0 text-center" href="/community">Open community problems</a>
-      </section>
-
       {createOpen ? (
         <div
           className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/45 p-4 sm:p-8"
