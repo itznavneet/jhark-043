@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { AppShell } from "../../components/AppShell";
 import {
   EmptyState,
@@ -24,7 +24,7 @@ const roleLabels: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-  const { accessToken, user, loading, signOut, updateProfile } = useAuth();
+  const { accessToken, user, loading, updateProfile } = useAuth();
   const [problems, setProblems] = useState<Problem[]>([]);
   const [name, setName] = useState("");
   const [editing, setEditing] = useState(false);
@@ -45,12 +45,6 @@ export default function ProfilePage() {
     if (user) setName(user.displayName);
     void loadProblems();
   }, [loadProblems, user]);
-
-  const stats = useMemo(() => ({
-    submitted: problems.length,
-    active: problems.filter((problem) => !["COMPLETED", "REJECTED", "CANCELLED"].includes(problem.currentStatus)).length,
-    completed: problems.filter((problem) => problem.currentStatus === "COMPLETED").length,
-  }), [problems]);
 
   if (loading || !user || !accessToken) return <LoadingState label="Loading your profile" />;
 
@@ -75,11 +69,11 @@ export default function ProfilePage() {
       <PageHeader
         eyebrow="Account & identity"
         title="Your profile"
-        description="Manage your identity, review your contribution, and follow every challenge you have raised."
+        description="Manage your identity and keep your account information up to date."
         action={<span className="status-badge status-success"><span className="status-dot" />Active account</span>}
       />
       {error ? <div className="mt-6"><ErrorAlert message={error} /></div> : null}
-      <div className="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+      <div className="mt-7 max-w-4xl">
         <section className="panel p-6 sm:p-8" aria-labelledby="identity-title">
           <div className="flex flex-col gap-5 border-b border-slate-100 pb-6 sm:flex-row sm:items-center">
             <div className="grid h-20 w-20 shrink-0 place-items-center rounded-3xl bg-ink text-2xl font-black text-white">
@@ -105,24 +99,13 @@ export default function ProfilePage() {
                 </div>
               </div>
             ) : <p className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-semibold text-ink">{user.displayName}</p>}
-            <dl className="grid gap-4 border-t border-slate-100 pt-5 sm:grid-cols-2">
+            <dl className="grid gap-4 border-t border-slate-100 pt-5 sm:grid-cols-3">
               <div><dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</dt><dd className="mt-1 text-sm font-medium text-ink">{user.email}</dd></div>
               <div><dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Account type</dt><dd className="mt-1 text-sm font-medium text-ink">{roleLabels[user.role] ?? formatStatus(user.role)}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Organization</dt><dd className="mt-1 text-sm font-medium text-ink">{user.profile?.organizationName ?? user.profile?.name ?? "Independent account"}</dd></div>
             </dl>
             {saved ? <p className="text-sm font-semibold text-emerald-700" role="status">Your profile was updated.</p> : null}
           </form>
-        </section>
-
-        <section className="panel p-6 sm:p-8" aria-labelledby="activity-title">
-          <p className="section-eyebrow">Your contribution</p>
-          <h2 className="section-title mt-1" id="activity-title">Activity snapshot</h2>
-          <div className="mt-6 grid grid-cols-3 gap-2">
-            <div className="rounded-xl bg-teal-50 p-3"><p className="text-2xl font-black text-accent">{stats.submitted}</p><p className="text-xs text-slate-600">Submitted</p></div>
-            <div className="rounded-xl bg-amber-50 p-3"><p className="text-2xl font-black text-amber-700">{stats.active}</p><p className="text-xs text-slate-600">In progress</p></div>
-            <div className="rounded-xl bg-emerald-50 p-3"><p className="text-2xl font-black text-emerald-700">{stats.completed}</p><p className="text-xs text-slate-600">Delivered</p></div>
-          </div>
-          <div className="mt-6 rounded-xl border border-teal-100 bg-teal-50/60 p-4 text-sm leading-6 text-slate-600">Your reports stay private to your account until they pass the appropriate human review and community validation steps.</div>
-          <button className="btn-secondary mt-5 w-full" onClick={async () => { await signOut(); window.location.href = "/"; }}>Sign out</button>
         </section>
       </div>
 

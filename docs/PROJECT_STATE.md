@@ -717,3 +717,21 @@ The next work should be driven by demonstration feedback: richer application rev
 | `frontend: npm.cmd exec -- tsc --noEmit --incremental false` | Passed. |
 | `frontend: npm.cmd run build` | Passed: optimized build generated 18 routes, including `/community`. |
 | `git diff --check` | Passed. |
+
+## Dashboard information architecture polish (2026-09-09)
+
+### COMPLETED
+
+- Removed the large three-card Activity Snapshot from the shared Profile page so profiles stay focused on identity, email, role/account type, organization, and name management.
+- Kept a compact three-card personal summary on My Challenges for submitted, validated/in-progress, and resolved/delivered problems.
+- Preserved the full Ministry Analytics page and role-specific navigation; no Citizen or Industry analytics page was added.
+- Kept existing profile editing, problem loading, authentication, API calls, and dashboard workflows unchanged.
+
+### VERIFIED COMMANDS
+
+| Command/check | Result |
+| --- | --- |
+| `frontend: npm.cmd run lint` | Passed. |
+| `frontend: tsc.cmd --noEmit --incremental false` | Passed. |
+| `frontend: npm.cmd run build` | Not completed in this run: `next build` emitted the Next.js version and then stalled without further output, so it was stopped after approximately one minute. Existing project-state records contain earlier successful production builds. |
+| `git diff --check` | Passed; only normal Git LF/CRLF working-tree warnings were reported. |

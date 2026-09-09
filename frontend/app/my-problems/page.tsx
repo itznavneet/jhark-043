@@ -47,6 +47,13 @@ export default function MyProblemsPage() {
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [createOpen]);
 
+  const submittedCount = problems.length;
+  const rejectedStatuses = new Set(["AI_REJECTED", "MINISTRY_REJECTED", "REJECTED", "CANCELLED"]);
+  const inProgressCount = problems.filter(
+    (problem) => !rejectedStatuses.has(problem.currentStatus) && problem.currentStatus !== "COMPLETED",
+  ).length;
+  const deliveredCount = problems.filter((problem) => problem.currentStatus === "COMPLETED").length;
+
   if (loading || !user || !accessToken)
     return <LoadingState label="Loading your workspace" />;
 
@@ -62,6 +69,20 @@ export default function MyProblemsPage() {
           </span>
         }
       />
+      <section className="mt-7 grid gap-3 sm:grid-cols-3" aria-label="Challenge summary">
+        <article className="panel border-blue-100 bg-blue-50/50 p-4 sm:p-5">
+          <p className="text-2xl font-black text-primary">{submittedCount}</p>
+          <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">Submitted</p>
+        </article>
+        <article className="panel border-blue-100 bg-blue-50/50 p-4 sm:p-5">
+          <p className="text-2xl font-black text-primary">{inProgressCount}</p>
+          <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">Validated / in progress</p>
+        </article>
+        <article className="panel border-emerald-100 bg-emerald-50/60 p-4 sm:p-5">
+          <p className="text-2xl font-black text-emerald-700">{deliveredCount}</p>
+          <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">Resolved / delivered</p>
+        </article>
+      </section>
       <div className="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1fr)_300px]">
         <section aria-labelledby="challenge-list-title">
           <div className="mb-4 flex items-center justify-between gap-4">
