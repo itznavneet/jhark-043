@@ -14,31 +14,39 @@ export function JharkhandMark({
     >
       <svg
         className="h-[72%] w-[72%]"
-        viewBox="0 0 48 48"
+        viewBox="30 20 360 325"
         role="img"
         aria-label={title}
       >
         <title>{title}</title>
         <path
-          d="M14 5.5 22 4l6 2 7-1 5 5-1 6 4 4-3 6 2 5-6 2-4 6-6-2-5 2-5-4-5-1-1-6-4-4 3-5-1-5 5-3Z"
-          fill="none"
-          stroke="white"
-          strokeWidth="2.5"
+          d="M123 30 179 24 219 35 265 27 306 48 312 80 356 100 348 131 382 153 368 189 337 208 345 244 319 267 308 306 273 326 224 319 195 342 151 329 122 299 84 294 78 260 48 235 64 198 36 174 67 143 60 106 94 90Z"
+          fill="white"
+          fillRule="evenodd"
+          stroke="#fff4ed"
+          strokeWidth="5"
           strokeLinejoin="round"
         />
-        <path
-          d="m10 20 10 4 7-5 8 3m-17-7 4 9-3 8m10-15-2 7 6 4m-12-7 8 2"
+        <g
           fill="none"
-          stroke="#ffd7bd"
-          strokeWidth="1.2"
+          stroke="#f15a24"
+          strokeWidth="4"
           strokeLinecap="round"
-          opacity=".9"
-        />
-        <g fill="white" stroke="#f15a24" strokeWidth="1.2">
-          <circle cx="20" cy="24" r="2.1" />
-          <circle cx="27" cy="19" r="2.1" />
-          <circle cx="35" cy="22" r="2.1" />
-          <circle cx="24" cy="32" r="2.1" />
+          opacity=".78"
+        >
+          <path d="m92 90 70 46 50-10 45 42 52-14 38 35" />
+          <path d="m78 158 84-22 20 56-48 55 44 82" />
+          <path d="m162 136 28 56 82-18 10 66-58 79" />
+          <path d="m267 27-18 93 45 54-21 51 46 42" />
+          <path d="m219 35 30 85-59 72 70 36" />
+        </g>
+        <g fill="#0b4f9c" stroke="white" strokeWidth="4">
+          <circle cx="185" cy="170" r="8" />
+          <circle cx="274" cy="178" r="8" />
+          <circle cx="320" cy="150" r="8" />
+          <circle cx="285" cy="99" r="8" />
+          <circle cx="217" cy="253" r="8" />
+          <circle cx="327" cy="222" r="8" />
         </g>
       </svg>
     </span>
